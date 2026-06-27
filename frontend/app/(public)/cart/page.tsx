@@ -53,7 +53,7 @@ export default function CartPage() {
               <p className="text-sm text-muted-foreground">Subtotal</p>
               <p data-testid="cart-subtotal" className="font-display text-3xl">${(subtotalCents/100).toFixed(2)}</p>
             </div>
-            <button data-testid="cart-checkout" onClick={checkout} disabled={busy} className="btn btn-primary">
+            <button data-testid="cart-checkout-btn" onClick={checkout} disabled={busy} className="btn btn-primary">
               {busy ? "Redirecting…" : "Checkout →"}
             </button>
           </div>

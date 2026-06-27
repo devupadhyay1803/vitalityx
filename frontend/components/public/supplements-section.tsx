@@ -32,7 +32,7 @@ export function SupplementsSection() {
               </div>
               <p className="mt-1 text-sm text-white/50">{p.description}</p>
               <button
-                data-testid={`add-to-stack-${p.id}`}
+                data-testid={`add-to-cart-${p.id}`}
                 onClick={() => {
                   add({ id: p.id, name: p.name, priceCents: p.priceCents, recurring: p.recurring });
                   toast.success(`${p.name} added to stack`);

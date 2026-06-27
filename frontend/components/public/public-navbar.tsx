@@ -146,14 +146,15 @@ export function PublicNavbar() {
               )}
             </div>
           ) : (
-            <Link href="/login" data-testid="navbar-sign-in" className="btn btn-ghost">
-              Sign In
-            </Link>
+            <>
+              <Link href="/login" data-testid="navbar-sign-in" className="btn btn-ghost">
+                Sign In
+              </Link>
+              <Link href="/signup" data-testid="navbar-get-started" className="btn btn-primary hidden sm:inline-flex">
+                Get Started
+              </Link>
+            </>
           )}
-
-          <Link href="/signup" data-testid="navbar-get-started" className="btn btn-primary hidden sm:inline-flex">
-            Get Started
-          </Link>
         </div>
       </div>
     </header>

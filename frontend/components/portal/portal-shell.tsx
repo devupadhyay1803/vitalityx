@@ -74,7 +74,7 @@ export function PortalShell({ variant, user, profile, children }: {
             );
           })}
         </nav>
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 pb-20 md:pb-3">
           <div className="flex items-center gap-2 rounded-lg p-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--vx-ink)] text-xs font-semibold text-white">
               {getInitials(profile.full_name || user.email)}

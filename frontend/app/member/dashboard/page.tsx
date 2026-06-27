@@ -53,7 +53,7 @@ export default function MemberDashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10" data-testid="member-dashboard">
-      <h1 className="font-display text-4xl font-medium tracking-tight">{timeOfDayGreeting()}, {name || "there"}.</h1>
+      <h1 data-testid="dashboard-greeting" className="font-display text-4xl font-medium tracking-tight">{timeOfDayGreeting()}, {name || "there"}.</h1>
       <p className="mt-2 text-muted-foreground">Here&apos;s today at a glance.</p>
 
       {/* Stat row */}

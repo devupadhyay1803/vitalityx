@@ -1209,6 +1209,10 @@
     padding-bottom: calc(var(--spacing) * 5);
   }
 
+  .pb-20 {
+    padding-bottom: calc(var(--spacing) * 20);
+  }
+
   .pb-24 {
     padding-bottom: calc(var(--spacing) * 24);
   }
@@ -1622,6 +1626,12 @@
   @media (min-width: 48rem) {
     .md\:pb-0 {
       padding-bottom: 0;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .md\:pb-3 {
+      padding-bottom: calc(var(--spacing) * 3);
     }
   }
 
