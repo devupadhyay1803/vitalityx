@@ -8,12 +8,10 @@ export default function LandingPage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="grain absolute inset-0 opacity-40" />
-        {/* Decorative ambient image, top-right, low opacity */}
-        <img
-          src="https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=1200&q=70"
-          alt=""
+        {/* Soft jade gradient orb instead of a photo — keeps hero clean */}
+        <div
           aria-hidden
-          className="pointer-events-none absolute -right-32 top-0 hidden h-[600px] w-[700px] rounded-full object-cover opacity-25 blur-sm mix-blend-multiply md:block"
+          className="pointer-events-none absolute -right-40 -top-32 hidden h-[640px] w-[640px] rounded-full bg-gradient-to-br from-[var(--vx-jade)]/40 to-transparent blur-3xl md:block"
         />
         <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-32">
           <div className="grid items-end gap-12 md:grid-cols-12">
@@ -82,8 +80,8 @@ export default function LandingPage() {
             </div>
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <img
-                src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=75"
-                alt="Comprehensive blood panel and analysis at a longevity lab"
+                src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=1200&q=75"
+                alt="Comprehensive blood panel analysis at a longevity lab"
                 className="h-64 w-full object-cover"
                 loading="lazy"
               />
@@ -121,8 +119,8 @@ export default function LandingPage() {
             </div>
             <div className="overflow-hidden rounded-2xl border border-border">
               <img
-                src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=75"
-                alt="Member on a Zone 2 cardio session"
+                src="https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=1200&q=75"
+                alt="Member on a Zone 2 cardio session at sunrise"
                 className="h-72 w-full object-cover"
                 loading="lazy"
               />
