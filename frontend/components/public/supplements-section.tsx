@@ -2,47 +2,62 @@
 import { useCart } from "@/components/cart/cart-provider";
 import { toast } from "sonner";
 import { PRODUCTS } from "@/lib/products";
-import { ArrowUpRight } from "lucide-react";
+import { Star, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function SupplementsSection() {
   const { add } = useCart();
   const list = Object.values(PRODUCTS);
 
   return (
-    <section id="supplements" className="border-t border-border bg-[var(--vx-ink)] py-24 text-white">
+    <section id="supplements" className="border-t border-border py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid items-end gap-10 md:grid-cols-2">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-white/50">The stack</p>
-            <h2 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">
-              A short, evidence-led list.<br />No fairy dust.
-            </h2>
-          </div>
-          <p className="text-white/70">
-            We don&apos;t sell forty SKUs. The stack is small, the dosing is what the trials used, and it changes when your labs change.
-          </p>
-        </div>
+        <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">Featured Compounds</p>
+        <h2 className="mt-3 text-center font-display text-4xl font-medium leading-tight md:text-5xl">
+          Optimized Stacks &amp; Diagnostic Assays
+        </h2>
+        <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
+          Our daily protocols leverage clinical-grade stacked supplements and diagnostics.
+        </p>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
           {list.map((p) => (
-            <div key={p.id} className="rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:bg-white/10" data-testid={`supplement-${p.id}`}>
-              <div className="flex items-center justify-between">
-                <span className="font-display text-lg">{p.name}</span>
-                <span className="text-sm text-white/60">${(p.priceCents/100).toFixed(0)}/mo</span>
+            <div key={p.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:shadow-xl" data-testid={`supplement-${p.id}`}>
+              <div className="aspect-square overflow-hidden bg-muted">
+                <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
               </div>
-              <p className="mt-1 text-sm text-white/50">{p.description}</p>
-              <button
-                data-testid={`add-to-cart-${p.id}`}
-                onClick={() => {
-                  add({ id: p.id, name: p.name, priceCents: p.priceCents, recurring: p.recurring });
-                  toast.success(`${p.name} added to stack`);
-                }}
-                className="mt-5 inline-flex w-full items-center justify-center gap-1 rounded-full bg-[var(--vx-jade)] px-4 py-2 text-sm font-medium text-[var(--vx-ink)] transition hover:brightness-110"
-              >
-                Add to Protocol Stack <ArrowUpRight size={14} />
-              </button>
+              <div className="flex flex-1 flex-col p-6">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="badge badge-jade">{p.category}</span>
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <Star size={12} className="fill-current text-amber-500" />
+                    {p.rating.toFixed(1)} ({p.reviewCount})
+                  </span>
+                </div>
+                <h3 className="mt-4 font-display text-xl">{p.name}</h3>
+                <p className="mt-2 flex-1 text-sm text-muted-foreground">{p.description}</p>
+                <div className="mt-5 flex items-center justify-between">
+                  <span className="font-display text-2xl">${(p.priceCents/100).toFixed(2)}</span>
+                  <button
+                    data-testid={`add-to-cart-${p.id}`}
+                    onClick={() => {
+                      add({ id: p.id, name: p.name, priceCents: p.priceCents, recurring: p.recurring });
+                      toast.success(`${p.name} added`);
+                    }}
+                    className="btn btn-primary text-sm"
+                  >
+                    Add to Stack <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link href="/cart" className="inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4">
+            Shop All Diagnostics &amp; Compounds <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
     </section>
