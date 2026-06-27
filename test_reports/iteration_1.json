@@ -1,0 +1,73 @@
+{
+  "summary": "Tested VitalityX Next.js app (public + auth + portal + cart→Stripe + RLS). 34/34 pytest cases pass against public URL and Supabase REST. Two CRITICAL bugs surfaced from a single root cause: the `profiles` table RLS policy has 'infinite recursion detected in policy' (Postgres 42P17), which (a) makes every SELECT on profiles return HTTP 500 and (b) breaks role-based routing — the coach (dr.vance@vitalityx.com) logs in and is sent to /member/dashboard instead of /staff/dashboard, and is rendered as 'Member' role with greeting 'Good morning, Dr..'. Cart→Stripe checkout works end-to-end and returns checkout.stripe.com URL. Demo switcher → member works perfectly. Member dashboard, sidebar, all 8 member routes load. Several data-testids called out in the spec are missing in the rendered DOM (nav-signin, nav-get-started, nav-avatar, dashboard-greeting, add-to-cart-*).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "Supabase REST /rest/v1/profiles (all SELECTs)",
+        "issue": "Postgres error 42P17 — 'infinite recursion detected in policy for relation profiles'. Both member and coach sessions trigger 500 on /rest/v1/profiles?select=role&id=eq.<uid> and /rest/v1/profiles?select=full_name,role&id=eq.<uid>. Root cause is an RLS policy on profiles that self-references profiles (likely a policy USING (id IN (SELECT id FROM profiles WHERE role='staff')) or similar). Cascading impact: role-based redirect, avatar dropdown, settings profile load, /staff/* gating all degrade.",
+        "priority": "CRITICAL"
+      },
+      {
+        "endpoint": "Auth post-login redirect / middleware role check",
+        "issue": "Coach login (dr.vance@vitalityx.com / CoachDemo2026!) lands on /member/dashboard instead of /staff/dashboard. Navigating directly to /staff/clients also bounces back to /member/dashboard. Sidebar shows 'Member' under DR initials. Same root cause as the profiles RLS recursion: middleware/role resolver falls back to 'member' when the profiles SELECT 500s.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "/api/health",
+        "issue": "No /api/health route exists on Next.js; minor — not required by spec but useful for k8s probes."
+      },
+      {
+        "endpoint": "/api/admin/bootstrap",
+        "issue": "Returns 'User exists: ... → password reset' steps but does NOT report whether protocol_items / biomarkers / sessions / messages re-seeding succeeded in this run's payload (the steps array stops at storage bucket). Hard to confirm idempotent re-seed of demo data from the response alone."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Public Navbar", "issue": "Missing data-testid attributes on 'Sign In' and 'Get Started' (spec called for nav-signin, nav-get-started).", "selector": "header nav a/button", "priority": "MEDIUM"},
+      {"component": "Public Navbar (auth state)", "issue": "After login the spec requires an avatar dropdown with 'Go to Dashboard' + 'Sign Out'; current navbar still shows 'Sign In' + 'Get Started' on /cart and other (public) routes while session is active. No data-testid='nav-avatar' present anywhere.", "selector": "[data-testid='nav-avatar']", "priority": "HIGH"},
+      {"component": "Member Dashboard", "issue": "Greeting H1 renders correctly ('Good morning, Dev.') but lacks data-testid='dashboard-greeting' as referenced in the request spec.", "selector": "[data-testid='dashboard-greeting']", "priority": "LOW"},
+      {"component": "Landing supplements section", "issue": "'Add to Protocol Stack' buttons (3 of them) work and update cart count, but lack data-testid^='add-to-cart-' attributes.", "selector": "[data-testid^='add-to-cart-']", "priority": "LOW"},
+      {"component": "Cart page", "issue": "Checkout button has no data-testid='checkout-btn'.", "selector": "[data-testid='checkout-btn']", "priority": "LOW"},
+      {"component": "Coach session UI", "issue": "Coach is shown with sidebar label 'Member' / initials block reads 'Member' — wrong because the profiles select 500'd; role falls back. Also greeting is 'Good morning, Dr..' (double period) because fallback uses email local-part 'dr.vance' split by '.'.", "selector": "aside, h1", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Coach login → /staff/dashboard", "issue": "Redirects to /member/dashboard. Direct nav to /staff/clients also redirects. Root cause = profiles RLS recursion; middleware cannot read role.", "affected_selectors": ["/staff/*"]},
+      {"flow": "Avatar dropdown / nav session UI", "issue": "Spec says nav should replace Sign In with avatar dropdown on auth — could not verify because (a) profiles SELECT 500s and (b) no nav-avatar element rendered on public layout when session is active.", "affected_selectors": ["header"]}
+    ],
+    "design_issues": [
+      {"screen": "Sidebar footer (member portal)", "issues": ["'Sign out' link is largely hidden behind the floating Emergent/N badge in the bottom-left corner — overlaps the sign-out hit area in 1920×1080 captures."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_vitalityx_routes.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix the `profiles` RLS infinite recursion (Postgres 42P17). Common fix: replace self-referential policy with a SECURITY DEFINER helper function that returns the current user's role from auth.uid(), and use that in policies on profiles AND on staff_access_logs / protected tables. After fix, verify /rest/v1/profiles?select=role&id=eq.<uid> returns 200.",
+    "Re-test coach role routing after RLS fix: login as dr.vance@vitalityx.com should land on /staff/dashboard, sidebar should reflect staff nav, /staff/clients should render the seeded member.",
+    "Add missing data-testid attributes: nav-signin, nav-get-started, nav-avatar (dropdown root + 'go-to-dashboard' + 'sign-out' items), dashboard-greeting, add-to-cart-<productId>, cart-checkout-btn.",
+    "Public navbar should switch to avatar dropdown when supabase session exists (currently still shows Sign In / Get Started on public routes like /cart while authenticated).",
+    "Bootstrap response: include explicit per-table seed counts in the `steps` array so testing agents can confirm idempotent re-seed.",
+    "Sign-out link in sidebar is visually obscured by the floating Emergent badge — increase bottom padding of the portal sidebar or move sign-out higher."
+  ],
+  "critical_code_review_comments": [
+    "RLS policy design: never reference the same table inside its own policy without a SECURITY DEFINER helper — this caused the 42P17 recursion and silently degrades every auth-aware screen.",
+    "Middleware should fail-closed on profile lookup errors (currently appears to fall back to 'member' on profiles 500, which is a privilege/UX bug — a coach is being routed into the member portal).",
+    "Greeting code splits email local-part on '.' and capitalizes the first chunk → produces 'Dr..' for dr.vance. Either pull display name from auth.user_metadata.full_name when profiles is unavailable, or sanitize trailing punctuation.",
+    "data-testid coverage is inconsistent — sidebar items have testids, but navbar, cart, dashboard greeting, and add-to-cart buttons do not. Tightens auto-test reliability if added across the board.",
+    "Public navbar does not appear to re-render based on auth state in the (public) layout (e.g. /cart still shows Sign In while session is active)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_vitalityx_routes.py"
+  ],
+  "success_rate": {"backend": "100% (34/34 pytest) — but profiles SELECTs are 500ing at the DB layer; covered in critical issues", "frontend": "~70% — public + member portal + cart work; coach/staff flow + auth-aware navbar broken"},
+  "test_credentials": "Member: dev.upadhyay@vitalityx.com / VitalityDemo2026!  |  Coach: dr.vance@vitalityx.com / CoachDemo2026!",
+  "seed_data_creation": "None created. Used existing bootstrap seed (5 protocol items, 5 biomarkers, 3 historical bio-age points, 1 upcoming session, 2 messages).",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Root cause for both critical bugs is one Postgres RLS issue on `profiles` (42P17 infinite recursion). After main agent fixes the policy, re-verify: (1) `curl /rest/v1/profiles?select=role&id=eq.<uid>` returns 200 with [{\"role\":\"member\"|\"staff\"}]; (2) coach login redirects to /staff/dashboard; (3) /staff/clients lists the member; (4) navbar avatar dropdown appears with 'Go to Dashboard' + 'Sign Out'. Other unverified flows due to time/role-blockers: signup 5-step end-to-end (only step-1 form load was checked), session booking modal write, daily check-in insert + sparkline, messages realtime, protocol builder add/remove, lab metadata upload, staff_access_logs row creation, mobile bottom tab at 375px. Cart→Stripe is fully working — checkout URL returned is https://checkout.stripe.com/c/pay/cs_test_... and a pending row should be in `orders` (verify with service role).",
+  "rca_of_the_issue": "Bug: profiles SELECT returns HTTP 500 with code 42P17. Reproduction: as authenticated user (member or coach), GET https://pxrrhxgspipzodzzumig.supabase.co/rest/v1/profiles?select=role&id=eq.<auth.uid()> with apikey + Bearer access_token → 500 {\"code\":\"42P17\",\"message\":\"infinite recursion detected in policy for relation \\\"profiles\\\"\"}. Mitigation: rewrite the offending RLS policy on profiles so it does NOT subquery `profiles`; use auth.jwt() claim or a SECURITY DEFINER function (e.g. CREATE FUNCTION public.current_role() RETURNS text SECURITY DEFINER LANGUAGE sql AS $$ SELECT role FROM public.profiles WHERE id = auth.uid() $$;) and reference that function from policies on OTHER tables only. Policies ON profiles itself should use simple `auth.uid() = id` for self-row access and a separate policy for staff (`current_role() = 'staff'`)."
+}

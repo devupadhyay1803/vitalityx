@@ -83,3 +83,6 @@ android-sdk/frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm6
 frontend/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 frontend/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
 frontend/.next/dev/cache/turbopack/f37fad94/00000059.sst
+frontend/.next/dev/cache/turbopack/f37fad94/00000201.sst
+frontend/.next/dev/cache/turbopack/f37fad94/00000253.sst
+frontend/.next/dev/cache/turbopack/f37fad94/00000255.sst

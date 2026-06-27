@@ -1,5 +1,23 @@
 {
+  "/(public)/cart/page": "app/(public)/cart/page.js",
+  "/(public)/forgot-password/page": "app/(public)/forgot-password/page.js",
+  "/(public)/gina/page": "app/(public)/gina/page.js",
+  "/(public)/help/page": "app/(public)/help/page.js",
+  "/(public)/login/page": "app/(public)/login/page.js",
   "/(public)/page": "app/(public)/page.js",
+  "/(public)/privacy/page": "app/(public)/privacy/page.js",
+  "/(public)/reset-password/page": "app/(public)/reset-password/page.js",
+  "/(public)/signup/page": "app/(public)/signup/page.js",
+  "/(public)/terms/page": "app/(public)/terms/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/api/admin/bootstrap/route": "app/api/admin/bootstrap/route.js",
-  "/api/admin/probe/route": "app/api/admin/probe/route.js"
+  "/api/stripe/checkout/route": "app/api/stripe/checkout/route.js",
+  "/member/check-in/page": "app/member/check-in/page.js",
+  "/member/dashboard/page": "app/member/dashboard/page.js",
+  "/member/data/page": "app/member/data/page.js",
+  "/member/messages/page": "app/member/messages/page.js",
+  "/member/protocol/page": "app/member/protocol/page.js",
+  "/member/sessions/page": "app/member/sessions/page.js",
+  "/member/settings/page": "app/member/settings/page.js",
+  "/member/supplements/page": "app/member/supplements/page.js"
 }

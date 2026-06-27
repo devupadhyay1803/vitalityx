@@ -55,18 +55,28 @@ export default function SignupPage() {
 
     setBusy(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { error, data: signUpData } = await supabase.auth.signUp({
       email, password,
       options: { data: { full_name, role: "Member" } },
     });
-    setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { setBusy(false); return toast.error(error.message); }
 
-    // sign in immediately for projects without email confirmation, or fall back to existing session
-    const { data: sess } = await supabase.auth.getSession();
+    // Sign in (handles projects without email confirmation)
+    let { data: sess } = await supabase.auth.getSession();
     if (!sess.session) {
-      await supabase.auth.signInWithPassword({ email, password });
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInErr) { setBusy(false); return toast.error(signInErr.message); }
+      ({ data: sess } = await supabase.auth.getSession());
     }
+
+    // Create profile + client_record manually (trigger was removed for stability)
+    const userId = sess.session?.user.id || signUpData?.user?.id;
+    if (userId) {
+      await supabase.from("profiles").upsert({ id: userId, full_name, email, role: "Member" }, { onConflict: "id" });
+      await supabase.from("client_records").upsert({ member_id: userId }, { onConflict: "member_id" });
+    }
+
+    setBusy(false);
     setDraft((d) => ({ ...d, full_name, email }));
     setStep(2);
   }
