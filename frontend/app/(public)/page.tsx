@@ -26,12 +26,12 @@ const STEPS = [
 ];
 
 const ADVANTAGES = [
-  { title: "Personalized Care",            body: "Every protocol is custom-engineered based on your unique genetic makeup, biomarker levels, and lifestyle goals. We never use one-size-fits-all templates." },
-  { title: "Evidence-Based Recommendations", body: "Our interventions are strictly backed by peer-reviewed longevity science and clinical trials. No fads, just proven biological optimizations." },
-  { title: "Expert Clinical Team",         body: "You're paired with elite longevity physicians and performance coaches who actively monitor your progress and refine your protocols." },
-  { title: "Continuous Monitoring",        body: "Your health is dynamic. We use continuous biometric feedback loops to adjust your stack as your biological age improves." },
-  { title: "Data Privacy & Security",      body: "Your genetic and clinical data is locked behind HIPAA-compliant, enterprise-grade encryption. Your health information is never sold." },
-  { title: "Premium Member Experience",    body: "Enjoy a frictionless healthcare experience. From at-home testing to our elegant mobile dashboard, we've designed every touchpoint for your convenience." },
+  { title: "Personalized Care",            image: "https://images.unsplash.com/photo-1638202993928-7267aad84c31?auto=format&fit=crop&w=600&q=70", body: "Every protocol is custom-engineered based on your unique genetic makeup, biomarker levels, and lifestyle goals. We never use one-size-fits-all templates." },
+  { title: "Evidence-Based Recommendations", image: "/assets/clinical_lab.jpg",                                                                  body: "Our interventions are strictly backed by peer-reviewed longevity science and clinical trials. No fads, just proven biological optimizations." },
+  { title: "Expert Clinical Team",         image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=70", body: "You're paired with elite longevity physicians and performance coaches who actively monitor your progress and refine your protocols." },
+  { title: "Continuous Monitoring",        image: "https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?auto=format&fit=crop&w=600&q=70", body: "Your health is dynamic. We use continuous biometric feedback loops to adjust your stack as your biological age improves." },
+  { title: "Data Privacy & Security",      image: "/assets/secure_vault.jpg",                                                                    body: "Your genetic and clinical data is locked behind HIPAA-compliant, enterprise-grade encryption. Your health information is never sold." },
+  { title: "Premium Member Experience",    image: "/assets/hero_woman.jpg",                                                                      body: "Enjoy a frictionless healthcare experience. From at-home testing to our elegant mobile dashboard, we've designed every touchpoint for your convenience." },
 ];
 
 const BIOMARKERS = [
@@ -218,14 +218,19 @@ export default function LandingPage() {
           <p className="text-xs uppercase tracking-widest text-white/50">The VitalityX Advantage</p>
           <h2 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">Why Choose VitalityX</h2>
           <p className="mt-4 max-w-xl text-white/70">Healthcare built around you — not averages.</p>
-          <div className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {ADVANTAGES.map((a) => (
-              <div key={a.title}>
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--vx-jade)]/20 text-[var(--vx-jade)]"><Sparkles size={14} /></span>
-                  <h3 className="font-display text-xl">{a.title}</h3>
+              <div key={a.title} className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:bg-white/[0.07]">
+                <div className="aspect-[16/9] overflow-hidden bg-white/5">
+                  <img src={a.image} alt={a.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </div>
-                <p className="mt-3 text-sm text-white/70">{a.body}</p>
+                <div className="p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--vx-jade)]/20 text-[var(--vx-jade)]"><Sparkles size={12} /></span>
+                    <h3 className="font-display text-lg">{a.title}</h3>
+                  </div>
+                  <p className="mt-3 text-sm text-white/70">{a.body}</p>
+                </div>
               </div>
             ))}
           </div>
