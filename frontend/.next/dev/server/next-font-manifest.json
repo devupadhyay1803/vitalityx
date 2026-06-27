@@ -75,6 +75,14 @@
     "[project]/app/member/supplements/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
+    ],
+    "[project]/app/staff/clients/page": [
+      "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
+    ],
+    "[project]/app/staff/dashboard/page": [
+      "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ]
   },
   "appUsingSizeAdjust": true,

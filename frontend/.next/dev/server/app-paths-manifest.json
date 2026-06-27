@@ -19,5 +19,7 @@
   "/member/protocol/page": "app/member/protocol/page.js",
   "/member/sessions/page": "app/member/sessions/page.js",
   "/member/settings/page": "app/member/settings/page.js",
-  "/member/supplements/page": "app/member/supplements/page.js"
+  "/member/supplements/page": "app/member/supplements/page.js",
+  "/staff/clients/page": "app/staff/clients/page.js",
+  "/staff/dashboard/page": "app/staff/dashboard/page.js"
 }
