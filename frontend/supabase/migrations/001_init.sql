@@ -296,38 +296,97 @@ create policy "client_records_member_insert" on public.client_records
     or exists (select 1 from public.profiles where id = auth.uid() and role in ('Coach','Admin','Ops'))
   );
 
--- Health data tables: member sees own, assigned coach sees member's
-do $$
-declare t text;
-begin
-  for t in select unnest(array[
-    'biomarkers','lab_results','genetic_traits','protocol_items',
-    'protocol_completions','daily_checkins','sessions',
-    'supplement_subscriptions','orders'
-  ]) loop
-    execute format('alter table public.%I enable row level security', t);
-    execute format('drop policy if exists "member_own_read" on public.%I', t);
-    execute format($f$create policy "member_own_read" on public.%I
-      for select using (
-        auth.uid() = member_id
-        or exists (
-          select 1 from public.client_records cr
-          where cr.member_id = public.%I.member_id and cr.assigned_coach_id = auth.uid()
-        )
-        or exists (select 1 from public.profiles where id = auth.uid() and role in ('Admin','Ops'))
-      )$f$, t, t);
-    execute format('drop policy if exists "member_own_write" on public.%I', t);
-    execute format($f$create policy "member_own_write" on public.%I
-      for all using (
-        auth.uid() = member_id
-        or exists (
-          select 1 from public.client_records cr
-          where cr.member_id = public.%I.member_id and cr.assigned_coach_id = auth.uid()
-        )
-        or exists (select 1 from public.profiles where id = auth.uid() and role in ('Admin','Ops'))
-      )$f$, t, t);
-  end loop;
-end$$;
+-- Health data tables: member sees own; assigned coach sees member's; admins see all.
+-- Uses a security-definer helper so policy expressions stay simple.
+
+create or replace function public.is_assigned_coach(p_member uuid)
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.client_records
+    where member_id = p_member and assigned_coach_id = auth.uid()
+  );
+$$;
+
+create or replace function public.is_admin_or_ops()
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role in ('Admin','Ops')
+  );
+$$;
+
+-- biomarkers
+alter table public.biomarkers enable row level security;
+drop policy if exists "bm_read"  on public.biomarkers;
+drop policy if exists "bm_write" on public.biomarkers;
+create policy "bm_read"  on public.biomarkers for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "bm_write" on public.biomarkers for all    using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops())
+                                                        with check (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+
+-- lab_results
+alter table public.lab_results enable row level security;
+drop policy if exists "lab_read"  on public.lab_results;
+drop policy if exists "lab_write" on public.lab_results;
+create policy "lab_read"  on public.lab_results for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "lab_write" on public.lab_results for all    using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops())
+                                                          with check (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+
+-- genetic_traits
+alter table public.genetic_traits enable row level security;
+drop policy if exists "gen_read"  on public.genetic_traits;
+drop policy if exists "gen_write" on public.genetic_traits;
+create policy "gen_read"  on public.genetic_traits for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "gen_write" on public.genetic_traits for all    using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops())
+                                                              with check (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+
+-- protocol_items
+alter table public.protocol_items enable row level security;
+drop policy if exists "pi_read"  on public.protocol_items;
+drop policy if exists "pi_write" on public.protocol_items;
+create policy "pi_read"  on public.protocol_items for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "pi_write" on public.protocol_items for all    using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops())
+                                                              with check (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+
+-- protocol_completions
+alter table public.protocol_completions enable row level security;
+drop policy if exists "pc_read"  on public.protocol_completions;
+drop policy if exists "pc_write" on public.protocol_completions;
+create policy "pc_read"  on public.protocol_completions for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "pc_write" on public.protocol_completions for all    using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops())
+                                                                    with check (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+
+-- daily_checkins
+alter table public.daily_checkins enable row level security;
+drop policy if exists "dc_read"  on public.daily_checkins;
+drop policy if exists "dc_write" on public.daily_checkins;
+create policy "dc_read"  on public.daily_checkins for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "dc_write" on public.daily_checkins for all    using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops())
+                                                              with check (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+
+-- sessions
+alter table public.sessions enable row level security;
+drop policy if exists "ss_read"  on public.sessions;
+drop policy if exists "ss_write" on public.sessions;
+create policy "ss_read"  on public.sessions for select using (auth.uid() = member_id or auth.uid() = coach_id or public.is_admin_or_ops());
+create policy "ss_write" on public.sessions for all    using (auth.uid() = member_id or auth.uid() = coach_id or public.is_admin_or_ops())
+                                                        with check (auth.uid() = member_id or auth.uid() = coach_id or public.is_admin_or_ops());
+
+-- supplement_subscriptions
+alter table public.supplement_subscriptions enable row level security;
+drop policy if exists "subs_read"  on public.supplement_subscriptions;
+drop policy if exists "subs_write" on public.supplement_subscriptions;
+create policy "subs_read"  on public.supplement_subscriptions for select using (auth.uid() = member_id or public.is_assigned_coach(member_id) or public.is_admin_or_ops());
+create policy "subs_write" on public.supplement_subscriptions for all    using (auth.uid() = member_id or public.is_admin_or_ops())
+                                                                          with check (auth.uid() = member_id or public.is_admin_or_ops());
+
+-- orders
+alter table public.orders enable row level security;
+drop policy if exists "orders_read"  on public.orders;
+create policy "orders_read"  on public.orders for select using (auth.uid() = member_id or public.is_admin_or_ops());
 
 -- messages: sender or receiver
 alter table public.messages enable row level security;
