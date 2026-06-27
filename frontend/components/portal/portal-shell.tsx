@@ -74,7 +74,7 @@ export function PortalShell({ variant, user, profile, children }: {
             );
           })}
         </nav>
-        <div className="border-t border-border p-3 pb-20 md:pb-3">
+        <div className="border-t border-border p-3 pb-28 md:pb-28">
           <div className="flex items-center gap-2 rounded-lg p-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--vx-ink)] text-xs font-semibold text-white">
               {getInitials(profile.full_name || user.email)}
@@ -84,7 +84,7 @@ export function PortalShell({ variant, user, profile, children }: {
               <p className="truncate text-xs text-muted-foreground">{profile.role}</p>
             </div>
           </div>
-          <button onClick={handleSignOut} data-testid="sidebar-signout" className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
+          <button onClick={handleSignOut} data-testid="sidebar-signout" className="mt-1 ml-10 flex w-[calc(100%-2.5rem)] items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
             <LogOut size={14} /> Sign out
           </button>
         </div>

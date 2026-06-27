@@ -653,6 +653,10 @@
     margin-bottom: calc(var(--spacing) * 8);
   }
 
+  .ml-10 {
+    margin-left: calc(var(--spacing) * 10);
+  }
+
   .block {
     display: block;
   }
@@ -795,6 +799,10 @@
 
   .w-64 {
     width: calc(var(--spacing) * 64);
+  }
+
+  .w-\[calc\(100\%-2\.5rem\)\] {
+    width: calc(100% - 2.5rem);
   }
 
   .w-full {
@@ -1345,6 +1353,10 @@
     padding-bottom: calc(var(--spacing) * 24);
   }
 
+  .pb-28 {
+    padding-bottom: calc(var(--spacing) * 28);
+  }
+
   .text-center {
     text-align: center;
   }
@@ -1760,6 +1772,12 @@
   @media (min-width: 48rem) {
     .md\:pb-3 {
       padding-bottom: calc(var(--spacing) * 3);
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .md\:pb-28 {
+      padding-bottom: calc(var(--spacing) * 28);
     }
   }
 
