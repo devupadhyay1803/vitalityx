@@ -8,7 +8,14 @@ export default function LandingPage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="grain absolute inset-0 opacity-40" />
-        <div className="mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-32">
+        {/* Decorative ambient image, top-right, low opacity */}
+        <img
+          src="https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=1200&q=70"
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute -right-32 top-0 hidden h-[600px] w-[700px] rounded-full object-cover opacity-25 blur-sm mix-blend-multiply md:block"
+        />
+        <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-32">
           <div className="grid items-end gap-12 md:grid-cols-12">
             <div className="md:col-span-7 vx-fade">
               <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs uppercase tracking-widest text-muted-foreground">
@@ -66,10 +73,22 @@ export default function LandingPage() {
       {/* ── Science ── */}
       <section id="science" className="border-t border-border bg-[var(--vx-cream)]/30 py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">The Science</p>
-          <h2 className="mt-3 max-w-3xl font-display text-4xl font-medium leading-tight md:text-5xl">
-            We don&apos;t guess. We measure, then we move.
-          </h2>
+          <div className="grid items-end gap-12 md:grid-cols-2">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">The Science</p>
+              <h2 className="mt-3 max-w-3xl font-display text-4xl font-medium leading-tight md:text-5xl">
+                We don&apos;t guess. We measure, then we move.
+              </h2>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+              <img
+                src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=75"
+                alt="Comprehensive blood panel and analysis at a longevity lab"
+                className="h-64 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
           <div className="mt-14 grid gap-8 md:grid-cols-3">
             {[
               { Icon: Beaker, title: "Comprehensive labs", body: "Quarterly panels: ApoB, hs-CRP, insulin, sex hormones, omega index, full thyroid, and biological age clocks." },
@@ -95,11 +114,19 @@ export default function LandingPage() {
               <h2 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">
                 Your plan is yours. Your coach is yours.
               </h2>
+              <p className="mt-5 text-muted-foreground max-w-lg">
+                Every member is assigned one coach who builds the protocol with you and revisits it every six weeks against fresh data.
+                No content drips, no group calls — just one accountable human and your numbers.
+              </p>
             </div>
-            <p className="text-muted-foreground">
-              Every member is assigned one coach who builds the protocol with you and revisits it every six weeks against fresh data.
-              No content drips, no group calls — just one accountable human and your numbers.
-            </p>
+            <div className="overflow-hidden rounded-2xl border border-border">
+              <img
+                src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=75"
+                alt="Member on a Zone 2 cardio session"
+                className="h-72 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-4">
             {[
