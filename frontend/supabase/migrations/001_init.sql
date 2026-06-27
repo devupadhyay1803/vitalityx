@@ -8,6 +8,30 @@
 -- ---------- Extensions ----------
 create extension if not exists "pgcrypto";
 
+-- ---------- Clean reset of any prior incompatible schema ----------
+-- (Safe: there is no real production data yet. Re-runnable.)
+drop table if exists public.staff_access_logs       cascade;
+drop table if exists public.supplement_subscriptions cascade;
+drop table if exists public.orders                  cascade;
+drop table if exists public.daily_checkins          cascade;
+drop table if exists public.messages                cascade;
+drop table if exists public.genetic_traits          cascade;
+drop table if exists public.biomarkers              cascade;
+drop table if exists public.lab_results             cascade;
+drop table if exists public.protocol_completions    cascade;
+drop table if exists public.protocol_items          cascade;
+drop table if exists public.sessions                cascade;
+drop table if exists public.client_records          cascade;
+
+-- profiles: keep the table (it links to auth.users) but make sure it has the right columns
+-- These ADDs are idempotent (IF NOT EXISTS guards).
+alter table if exists public.profiles add column if not exists email              text;
+alter table if exists public.profiles add column if not exists dob                date;
+alter table if exists public.profiles add column if not exists biological_sex     text;
+alter table if exists public.profiles add column if not exists health_goal        text;
+alter table if exists public.profiles add column if not exists notification_prefs jsonb default '{}'::jsonb;
+alter table if exists public.profiles add column if not exists created_at         timestamptz default now();
+
 -- ---------- profiles ----------
 create table if not exists public.profiles (
   id uuid primary key references auth.users on delete cascade,
