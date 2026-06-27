@@ -1,0 +1,144 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* VitalityX brand: deep ink + bioluminescent jade */
+  --background: oklch(0.985 0.005 95);
+  --foreground: oklch(0.18 0.025 230);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.025 230);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.025 230);
+  --primary: oklch(0.18 0.025 230);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.96 0.008 95);
+  --secondary-foreground: oklch(0.22 0.025 230);
+  --muted: oklch(0.95 0.008 95);
+  --muted-foreground: oklch(0.5 0.015 230);
+  --accent: oklch(0.78 0.16 160);          /* jade accent */
+  --accent-foreground: oklch(0.15 0.025 230);
+  --destructive: oklch(0.62 0.21 25);
+  --border: oklch(0.92 0.008 95);
+  --input: oklch(0.93 0.008 95);
+  --ring: oklch(0.78 0.16 160);
+  --radius: 0.75rem;
+  --vx-ink: oklch(0.18 0.025 230);
+  --vx-jade: oklch(0.78 0.16 160);
+  --vx-amber: oklch(0.82 0.16 80);
+  --vx-coral: oklch(0.72 0.18 25);
+  --vx-cream: oklch(0.97 0.018 90);
+}
+
+.dark {
+  --background: oklch(0.14 0.02 230);
+  --foreground: oklch(0.97 0.005 95);
+  --card: oklch(0.18 0.025 230);
+  --card-foreground: oklch(0.97 0.005 95);
+  --popover: oklch(0.18 0.025 230);
+  --popover-foreground: oklch(0.97 0.005 95);
+  --primary: oklch(0.78 0.16 160);
+  --primary-foreground: oklch(0.15 0.025 230);
+  --secondary: oklch(0.22 0.025 230);
+  --secondary-foreground: oklch(0.97 0.005 95);
+  --muted: oklch(0.22 0.025 230);
+  --muted-foreground: oklch(0.7 0.015 230);
+  --accent: oklch(0.78 0.16 160);
+  --accent-foreground: oklch(0.15 0.025 230);
+  --destructive: oklch(0.62 0.21 25);
+  --border: oklch(0.26 0.025 230);
+  --input: oklch(0.26 0.025 230);
+  --ring: oklch(0.78 0.16 160);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-jade: var(--vx-jade);
+  --color-amber: var(--vx-amber);
+  --color-coral: var(--vx-coral);
+  --color-cream: var(--vx-cream);
+  --color-ink: var(--vx-ink);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "Fraunces", "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-display: "Fraunces", "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle grain on hero */
+.grain::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.12 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+* { border-color: var(--border); }
+*::selection { background: var(--vx-jade); color: var(--vx-ink); }
+
+/* Pill button */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-primary { background: var(--vx-ink); color: white; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(0,0,0,0.3); }
+.btn-jade { background: var(--vx-jade); color: var(--vx-ink); }
+.btn-jade:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -8px oklch(0.78 0.16 160 / 0.5); }
+.btn-ghost { background: transparent; color: var(--foreground); }
+.btn-ghost:hover { background: var(--muted); }
+.btn-outline { background: transparent; color: var(--foreground); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--muted); }
+
+/* Card */
+.vx-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Input */
+.vx-input {
+  @apply w-full rounded-lg border bg-card px-4 py-2.5 text-sm outline-none transition;
+  border-color: var(--input);
+}
+.vx-input:focus { border-color: var(--vx-jade); box-shadow: 0 0 0 3px oklch(0.78 0.16 160 / 0.15); }
+
+/* Badge */
+.badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
+.badge-jade { background: oklch(0.78 0.16 160 / 0.15); color: oklch(0.35 0.12 160); }
+.badge-amber { background: oklch(0.82 0.16 80 / 0.15); color: oklch(0.4 0.14 70); }
+.badge-coral { background: oklch(0.72 0.18 25 / 0.15); color: oklch(0.42 0.16 25); }
+.badge-ink { background: oklch(0.18 0.025 230 / 0.08); color: var(--vx-ink); }
+
+/* Fade-in stagger */
+@keyframes vxFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.vx-fade { animation: vxFade 0.6s ease-out both; }
