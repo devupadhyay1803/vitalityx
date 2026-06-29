@@ -10,7 +10,7 @@ import { ContactForm } from "@/components/public/contact-form";
 const TRUST = ["Clinician-led", "Science-backed", "Privacy-first", "FDA Registered Labs"];
 
 const FEATURES = [
-  { Icon: Dna,           title: "Genetic Analysis",                image: "/assets/dna_sequencing.jpg", body: "Decode your DNA to uncover specific genetic variants that influence your health span, cognitive aging, and athletic performance." },
+  { Icon: Dna,           title: "Genetic Analysis",                body: "Decode your DNA to uncover specific genetic variants that influence your health span, cognitive aging, and athletic performance." },
   { Icon: Microscope,    title: "Advanced Lab Testing",            body: "Track 65+ critical biomarkers with comprehensive CLIA-certified diagnostics to gain unprecedented visibility into your biology." },
   { Icon: Activity,      title: "Biological Age Tracking",         body: "Monitor the rate at which your cells are aging and see precisely how your lifestyle and clinical protocols reverse the clock over time." },
   { Icon: FlaskConical,  title: "Personalized Supplement Protocols", body: "Receive tailor-made nutritional, nutraceutical, and lifestyle plans engineered specifically for your unique biological baseline." },
@@ -182,14 +182,11 @@ export default function LandingPage() {
             A complete ecosystem built around precision medicine, advanced diagnostics, and personalized health optimization.
           </p>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ Icon, title, body, image }) => (
-              <div key={title} className="vx-card overflow-hidden transition hover:shadow-md flex flex-col">
-                {image && <img src={image} alt={title} className="h-32 w-full object-cover" loading="lazy" />}
-                <div className="p-7 flex-1">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--vx-jade)]/15 text-[var(--vx-ink)]"><Icon size={20} /></div>
-                  <h3 className="mt-5 font-display text-xl">{title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-                </div>
+            {FEATURES.map(({ Icon, title, body }) => (
+              <div key={title} className="vx-card p-7 transition hover:shadow-md">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--vx-jade)]/15 text-[var(--vx-ink)]"><Icon size={20} /></div>
+                <h3 className="mt-5 font-display text-xl">{title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{body}</p>
               </div>
             ))}
           </div>
