@@ -6,3 +6,6 @@
 
 # Note: Environment variables (NEXT_PUBLIC_SUPABASE_URL, etc.) 
 # still need to be set in the Netlify Dashboard -> Site settings -> Environment variables.
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
