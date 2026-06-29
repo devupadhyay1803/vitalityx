@@ -231,6 +231,18 @@
       "namedRegex": "^/staff/messages(?:/)?$"
     },
     {
+      "page": "/staff/mfa/setup",
+      "regex": "^/staff/mfa/setup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/staff/mfa/setup(?:/)?$"
+    },
+    {
+      "page": "/staff/mfa/verify",
+      "regex": "^/staff/mfa/verify(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/staff/mfa/verify(?:/)?$"
+    },
+    {
       "page": "/staff/sessions",
       "regex": "^/staff/sessions(?:/)?$",
       "routeKeys": {},

@@ -281,6 +281,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/staff/mfa/setup/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/staff/mfa/setup">> = Specific
+  const handler = {} as typeof import("../../app/staff/mfa/setup/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/staff/mfa/verify/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/staff/mfa/verify">> = Specific
+  const handler = {} as typeof import("../../app/staff/mfa/verify/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/staff/sessions/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/staff/sessions">> = Specific

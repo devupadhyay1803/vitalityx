@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
 import { CartProvider } from "@/components/cart/cart-provider";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-sans",
   display: "swap",
-  axes: ["opsz", "SOFT"],
 });
-const inter = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 
 export const metadata: Metadata = {
   title: "VitalityX — Precision Longevity Health",
@@ -23,7 +21,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fraunces.variable} ${inter.variable} antialiased`}>
+      <body className={`${montserrat.variable} font-sans antialiased`}>
         <CartProvider>
           {children}
           <Toaster position="top-center" richColors closeButton />

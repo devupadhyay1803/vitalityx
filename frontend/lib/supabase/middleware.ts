@@ -61,6 +61,21 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/member/dashboard";
       return NextResponse.redirect(url);
     }
+
+    // MFA Enforcement for Staff
+    if (isStaff && role !== "Member" && !path.startsWith("/staff/mfa")) {
+      const { data: { aal } } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal && aal.currentLevel === 'aal1') {
+        const url = request.nextUrl.clone();
+        if (aal.nextLevel === 'aal1') {
+          url.pathname = "/staff/mfa/setup";
+        } else if (aal.nextLevel === 'aal2') {
+          url.pathname = "/staff/mfa/verify";
+        }
+        url.searchParams.set("next", path);
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   // Redirect logged-in users away from /login + /signup

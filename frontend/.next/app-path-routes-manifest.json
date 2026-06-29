@@ -33,6 +33,8 @@
   "/staff/clients/page": "/staff/clients",
   "/staff/dashboard/page": "/staff/dashboard",
   "/staff/messages/page": "/staff/messages",
+  "/staff/mfa/setup/page": "/staff/mfa/setup",
+  "/staff/mfa/verify/page": "/staff/mfa/verify",
   "/staff/sessions/page": "/staff/sessions",
   "/staff/settings/page": "/staff/settings"
 }

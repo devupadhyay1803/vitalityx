@@ -80,8 +80,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: "Fraunces", "Cormorant Garamond", ui-serif, Georgia, serif;
-  --font-display: "Fraunces", "Cormorant Garamond", serif;
+  --font-sans: var(--font-sans), "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans), "Montserrat", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 

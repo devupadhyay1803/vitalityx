@@ -33,6 +33,8 @@
   "/staff/clients/page": "app/staff/clients/page.js",
   "/staff/dashboard/page": "app/staff/dashboard/page.js",
   "/staff/messages/page": "app/staff/messages/page.js",
+  "/staff/mfa/setup/page": "app/staff/mfa/setup/page.js",
+  "/staff/mfa/verify/page": "app/staff/mfa/verify/page.js",
   "/staff/sessions/page": "app/staff/sessions/page.js",
   "/staff/settings/page": "app/staff/settings/page.js"
 }
