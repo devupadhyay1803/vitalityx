@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const product = PRODUCTS[params.slug];
-  const { addToCart } = useCart();
+  const { add: addToCart } = useCart();
   const [adding, setAdding] = useState(false);
 
   if (!product) {
@@ -19,7 +19,12 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   const handleAdd = () => {
     setAdding(true);
-    addToCart(product.id);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      priceCents: product.priceCents,
+      recurring: !!product.recurring,
+    });
     toast.success(`${product.name} added to cart`);
     setTimeout(() => setAdding(false), 500);
   };
