@@ -31,6 +31,7 @@ const MEMBER_NAV: Nav[] = [
 
 const STAFF_NAV: Nav[] = [
   { href: "/staff/dashboard",  label: "Dashboard", icon: Activity,     testId: "sidebar-staff-dashboard" },
+  { href: "/staff/operations", label: "Operations",icon: LineChart,    testId: "sidebar-staff-operations" },
   { href: "/staff/clients",    label: "Clients",  icon: Users,        testId: "sidebar-staff-clients" },
   { href: "/staff/care-team",  label: "Care Team",icon: Users,        testId: "sidebar-staff-care-team" },
   { href: "/staff/sessions",   label: "Sessions", icon: CalendarDays, testId: "sidebar-staff-sessions" },
@@ -67,7 +68,12 @@ export function PortalShell({ variant, user, profile, children }: {
           <span className="inline-block h-5 w-5 rounded-full bg-[var(--vx-jade)]" /> VitalityX
         </Link>
         <nav className="flex-1 px-3">
-          {nav.map((item) => {
+          {nav.filter(item => {
+            if (item.href === "/staff/operations") {
+              return profile.role === "Admin" || profile.role === "Super Admin" || profile.role === "Operations";
+            }
+            return true;
+          }).map((item) => {
             const active = path === item.href || path.startsWith(item.href + "/");
             const Icon = item.icon;
             return (
