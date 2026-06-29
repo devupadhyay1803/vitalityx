@@ -26,7 +26,7 @@ export function NotificationHistory() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = React.useCallback(async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -42,11 +42,11 @@ export function NotificationHistory() {
       setNotifications(data as Notification[]);
     }
     setLoading(false);
-  };
+  }, [filter, supabase]);
 
   useEffect(() => {
     fetchNotifications();
-  }, [filter, supabase]);
+  }, [fetchNotifications]);
 
   const markAllRead = async () => {
     setNotifications(notifications.map(n => ({ ...n, is_read: true })));

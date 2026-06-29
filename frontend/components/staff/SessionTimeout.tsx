@@ -10,12 +10,12 @@ export default function SessionTimeout() {
   const router = useRouter();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const supabase = createBrowserClient(
+  const supabase = React.useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  ), []);
 
-  const resetTimer = () => {
+  const resetTimer = React.useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
@@ -24,7 +24,7 @@ export default function SessionTimeout() {
       await supabase.auth.signOut();
       router.push("/login?timeout=true");
     }, TIMEOUT_MS);
-  };
+  }, [router, supabase]);
 
   useEffect(() => {
     // Start initial timer
@@ -43,7 +43,7 @@ export default function SessionTimeout() {
         window.removeEventListener(event, handleActivity);
       });
     };
-  }, []);
+  }, [resetTimer]);
 
   return null; // Invisible component
 }

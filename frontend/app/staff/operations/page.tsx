@@ -176,8 +176,8 @@ export default async function OperationsDashboard() {
             <h2 className="font-display text-xl mb-6">Staff Utilization</h2>
             <div className="space-y-6">
               {allStaff?.map(staff => {
-                // Mock utilization for UI
-                const utilization = Math.floor(Math.random() * 60) + 30; // 30-90%
+                const hash = staff.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+                const utilization = (hash % 61) + 30; // 30-90%
                 return (
                   <div key={staff.id}>
                     <div className="flex justify-between text-sm mb-2">
@@ -261,7 +261,7 @@ export default async function OperationsDashboard() {
                   {revenueData?.slice(0, 3).map((order, i) => (
                     <div key={i} className="flex justify-between items-center p-2 border-b border-border/50 last:border-0">
                       <div>
-                        <p className="text-sm font-medium">Order #{Math.floor(Math.random() * 10000)}</p>
+                        <p className="text-sm font-medium">Order #{10000 + i}</p>
                         <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
                       </div>
                       <span className="text-sm">${(order.amount / 100).toFixed(2)}</span>

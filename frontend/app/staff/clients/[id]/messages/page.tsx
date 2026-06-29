@@ -20,7 +20,7 @@ export default function ClientMessagesPage({ params }: { params: Promise<{ id: s
   const [lastReadTimestamps, setLastReadTimestamps] = useState<Record<string, string>>({});
   const endRef = useRef<HTMLDivElement>(null);
 
-  async function loadAll() {
+  const loadAll = React.useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setMe(user.id);
@@ -82,7 +82,7 @@ export default function ClientMessagesPage({ params }: { params: Promise<{ id: s
         return loadedPartners.find((p) => p.id === user.id) || loadedPartners[0] || null;
       });
     }
-  }
+  }, [memberId]);
 
   useEffect(() => {
     const saved = localStorage.getItem(`vx_staff_${memberId}_last_read_timestamps`);
@@ -114,7 +114,7 @@ export default function ClientMessagesPage({ params }: { params: Promise<{ id: s
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [memberId]);
+  }, [memberId, loadAll]);
 
   useEffect(() => {
     if (selectedPartner) {

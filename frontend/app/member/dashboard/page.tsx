@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { timeOfDayGreeting, formatDate, getInitials } from "@/lib/utils";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Suspense } from "react";
-import { ArrowRight, Activity, Droplet, FileText, CheckCircle2, ChevronRight, Users, Calendar, MessageSquare, FlaskConical } from "lucide-react";
+import { ArrowRight, Activity, Droplet, FileText, CheckCircle2, Circle, ChevronRight, Users, Calendar, MessageSquare, FlaskConical } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { toast } from "sonner";
