@@ -18,7 +18,7 @@ export const PRODUCTS: Record<string, Product> = {
     description: "High-potency EPA/DHA formula for cardiovascular and cognitive support.",
     priceCents: 3500,
     recurring: true,
-    image: "/assets/omega3_bottle.jpg",
+    image: "/assets/supplement_bottle.jpg",
     category: "Active Supplement",
     rating: 4.7,
     reviewCount: 95,
