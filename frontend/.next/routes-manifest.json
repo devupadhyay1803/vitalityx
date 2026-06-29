@@ -39,6 +39,14 @@
       "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/labs(?:/)?$"
     },
     {
+      "page": "/staff/clients/[id]/messages",
+      "regex": "^/staff/clients/([^/]+?)/messages(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/messages(?:/)?$"
+    },
+    {
       "page": "/staff/clients/[id]/protocol",
       "regex": "^/staff/clients/([^/]+?)/protocol(?:/)?$",
       "routeKeys": {

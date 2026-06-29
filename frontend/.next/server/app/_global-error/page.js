@@ -1,9 +1,9 @@
 var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_global-error/page.js")
-R.c("server/chunks/ssr/[root-of-the-server]__1dky4g0._.js")
-R.c("server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_19--w_z.js")
-R.c("server/chunks/ssr/[root-of-the-server]__1ytccy6._.js")
-R.c("server/chunks/ssr/[root-of-the-server]__09khie0._.js")
-R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_0-o-goa.js")
-R.c("server/chunks/ssr/_next-internal_server_app__global-error_page_actions_0zi5s8-.js")
-R.m(42378)
-module.exports=R.m(42378).exports
+R.c("server/chunks/ssr/[root-of-the-server]__00fazcr._.js")
+R.c("server/chunks/ssr/02bg_next_dist_esm_build_templates_app-page_1jh0q3d.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0jkigr0._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1od8e48._.js")
+R.c("server/chunks/ssr/02bg_next_dist_client_components_builtin_global-error_18tnqvn.js")
+R.c("server/chunks/ssr/vitalityx_frontend__next-internal_server_app__global-error_page_actions_0yioikh.js")
+R.m(67538)
+module.exports=R.m(67538).exports

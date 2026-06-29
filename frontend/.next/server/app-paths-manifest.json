@@ -27,6 +27,7 @@
   "/member/settings/page": "app/member/settings/page.js",
   "/member/supplements/page": "app/member/supplements/page.js",
   "/staff/clients/[id]/labs/page": "app/staff/clients/[id]/labs/page.js",
+  "/staff/clients/[id]/messages/page": "app/staff/clients/[id]/messages/page.js",
   "/staff/clients/[id]/page": "app/staff/clients/[id]/page.js",
   "/staff/clients/[id]/protocol/page": "app/staff/clients/[id]/protocol/page.js",
   "/staff/clients/page": "app/staff/clients/page.js",

@@ -12,6 +12,17 @@ export type Product = {
 };
 
 export const PRODUCTS: Record<string, Product> = {
+  "omega-3-concentrate": {
+    id: "omega-3-concentrate",
+    name: "Omega-3 Concentrate",
+    description: "High-potency EPA/DHA formula for cardiovascular and cognitive support.",
+    priceCents: 3500,
+    recurring: true,
+    image: "/assets/omega3_bottle.jpg",
+    category: "Active Supplement",
+    rating: 4.7,
+    reviewCount: 95,
+  },
   "nmn-resveratrol": {
     id: "nmn-resveratrol",
     name: "VitalityX NMN + Resveratrol",

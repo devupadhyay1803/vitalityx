@@ -1,114 +1,118 @@
 {
   "app": {
-    "[project]/app/(public)/cart/page": [
+    "[project]/vitalityx/frontend/app/(public)/cart/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/forgot-password/page": [
+    "[project]/vitalityx/frontend/app/(public)/forgot-password/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/gina/page": [
+    "[project]/vitalityx/frontend/app/(public)/gina/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/help/page": [
+    "[project]/vitalityx/frontend/app/(public)/help/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/login/page": [
+    "[project]/vitalityx/frontend/app/(public)/login/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/order-confirmation/page": [
+    "[project]/vitalityx/frontend/app/(public)/order-confirmation/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/page": [
+    "[project]/vitalityx/frontend/app/(public)/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/privacy/page": [
+    "[project]/vitalityx/frontend/app/(public)/privacy/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/reset-password/page": [
+    "[project]/vitalityx/frontend/app/(public)/reset-password/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/signup/page": [
+    "[project]/vitalityx/frontend/app/(public)/signup/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/(public)/terms/page": [
+    "[project]/vitalityx/frontend/app/(public)/terms/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/_not-found/page": [
+    "[project]/vitalityx/frontend/app/_not-found/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/check-in/page": [
+    "[project]/vitalityx/frontend/app/member/check-in/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/dashboard/page": [
+    "[project]/vitalityx/frontend/app/member/dashboard/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/data/page": [
+    "[project]/vitalityx/frontend/app/member/data/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/messages/page": [
+    "[project]/vitalityx/frontend/app/member/messages/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/protocol/page": [
+    "[project]/vitalityx/frontend/app/member/protocol/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/sessions/page": [
+    "[project]/vitalityx/frontend/app/member/sessions/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/settings/page": [
+    "[project]/vitalityx/frontend/app/member/settings/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/member/supplements/page": [
+    "[project]/vitalityx/frontend/app/member/supplements/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/clients/[id]/labs/page": [
+    "[project]/vitalityx/frontend/app/staff/clients/[id]/labs/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/clients/[id]/page": [
+    "[project]/vitalityx/frontend/app/staff/clients/[id]/messages/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/clients/[id]/protocol/page": [
+    "[project]/vitalityx/frontend/app/staff/clients/[id]/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/clients/page": [
+    "[project]/vitalityx/frontend/app/staff/clients/[id]/protocol/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/dashboard/page": [
+    "[project]/vitalityx/frontend/app/staff/clients/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/messages/page": [
+    "[project]/vitalityx/frontend/app/staff/dashboard/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/sessions/page": [
+    "[project]/vitalityx/frontend/app/staff/messages/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ],
-    "[project]/app/staff/settings/page": [
+    "[project]/vitalityx/frontend/app/staff/sessions/page": [
+      "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
+    ],
+    "[project]/vitalityx/frontend/app/staff/settings/page": [
       "static/media/b67966e0b83b2cd0-s.p.0fuf3937kiol3.woff2",
       "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2"
     ]

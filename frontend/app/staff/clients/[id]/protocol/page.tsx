@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
 
 const supabase = createClient();
 
@@ -32,6 +33,13 @@ export default function ProtocolBuilder({ params }: { params: Promise<{ id: stri
   return (
     <div className="mx-auto max-w-3xl px-6 py-10" data-testid="staff-protocol-builder">
       <h1 className="font-display text-4xl font-medium">Protocol builder</h1>
+
+      <div className="mt-6 flex gap-4 border-b border-border pb-2 text-sm mb-6">
+        <Link href={`/staff/clients/${id}`} className="text-muted-foreground hover:text-foreground pb-2 px-1">Overview</Link>
+        <Link href={`/staff/clients/${id}/labs`} className="text-muted-foreground hover:text-foreground pb-2 px-1">Labs</Link>
+        <Link href={`/staff/clients/${id}/protocol`} className="font-medium text-[var(--vx-ink)] border-b-2 border-[var(--vx-ink)] pb-2 px-1">Protocol</Link>
+        <Link href={`/staff/clients/${id}/messages`} className="text-muted-foreground hover:text-foreground pb-2 px-1" data-testid="staff-client-messages-link">Messages</Link>
+      </div>
       <div className="mt-6 vx-card p-5 space-y-3">
         <input data-testid="builder-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Item title (e.g. Zone 2 cardio 45 min, 3×/week)" className="vx-input" />
         <textarea data-testid="builder-why" value={why} onChange={(e) => setWhy(e.target.value)} rows={3} placeholder="Why this is in the plan…" className="vx-input" />

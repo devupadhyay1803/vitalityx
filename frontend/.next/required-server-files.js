@@ -104,7 +104,7 @@ self.__SERVER_FILES_MANIFEST={
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/app/frontend",
+    "outputFileTracingRoot": "/Users/devupadhyay",
     "allowedDevOrigins": [
       "52cef6a0-1c6b-4e2d-a0d7-036a7e2d1fb4.preview.emergentagent.com",
       "52cef6a0-1c6b-4e2d-a0d7-036a7e2d1fb4.cluster-3.preview.emergentcf.cloud",
@@ -171,7 +171,7 @@ self.__SERVER_FILES_MANIFEST={
       "proxyPrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
-      "cpus": 15,
+      "cpus": 7,
       "memoryBasedWorkersCount": false,
       "imgOptConcurrency": null,
       "imgOptTimeoutInSeconds": 7,
@@ -309,12 +309,12 @@ self.__SERVER_FILES_MANIFEST={
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "/app/frontend"
+      "root": "/Users/devupadhyay"
     },
     "distDirRoot": ".next"
   },
-  "appDir": "/app/frontend",
-  "relativeAppDir": "",
+  "appDir": "/Users/devupadhyay/vitalityx/frontend",
+  "relativeAppDir": "vitalityx/frontend",
   "files": [
     ".next/package.json",
     ".next/routes-manifest.json",

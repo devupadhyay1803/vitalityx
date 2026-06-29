@@ -27,6 +27,7 @@
   "/member/settings/page": "/member/settings",
   "/member/supplements/page": "/member/supplements",
   "/staff/clients/[id]/labs/page": "/staff/clients/[id]/labs",
+  "/staff/clients/[id]/messages/page": "/staff/clients/[id]/messages",
   "/staff/clients/[id]/page": "/staff/clients/[id]",
   "/staff/clients/[id]/protocol/page": "/staff/clients/[id]/protocol",
   "/staff/clients/page": "/staff/clients",

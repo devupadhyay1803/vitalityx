@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export default async function ClientDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,6 +27,13 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
     <div className="mx-auto max-w-5xl px-6 py-10" data-testid="staff-client-detail">
       <h1 className="font-display text-4xl font-medium">{profile.full_name}</h1>
       <p className="mt-2 text-muted-foreground">{profile.email} · Goal: {profile.health_goal || "—"}</p>
+
+      <div className="mt-6 flex gap-4 border-b border-border pb-2 text-sm">
+        <Link href={`/staff/clients/${id}`} className="font-medium text-[var(--vx-ink)] border-b-2 border-[var(--vx-ink)] pb-2 px-1">Overview</Link>
+        <Link href={`/staff/clients/${id}/labs`} className="text-muted-foreground hover:text-foreground pb-2 px-1">Labs</Link>
+        <Link href={`/staff/clients/${id}/protocol`} className="text-muted-foreground hover:text-foreground pb-2 px-1">Protocol</Link>
+        <Link href={`/staff/clients/${id}/messages`} className="text-muted-foreground hover:text-foreground pb-2 px-1" data-testid="staff-client-messages-link">Messages</Link>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <Card title="Intake"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(cr?.intake || {}, null, 2)}</pre></Card>

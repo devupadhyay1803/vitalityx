@@ -57,7 +57,10 @@ export default function SignupPage() {
     const supabase = createClient();
     const { error, data: signUpData } = await supabase.auth.signUp({
       email, password,
-      options: { data: { full_name, role: "Member" } },
+      options: {
+        data: { full_name, role: "Member" },
+        emailRedirectTo: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+      },
     });
     if (error) { setBusy(false); return toast.error(error.message); }
 
