@@ -126,15 +126,26 @@ export default function SignupPage() {
   }
 
   // ── Step 4: consent ──
-  async function submitStep4() {
+  async function submitStep4(signatureName: string) {
     setBusy(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setBusy(false); return toast.error("Session lost — please refresh."); }
+    
+    // We store the signature in the intake JSON to avoid schema conflicts,
+    // alongside the top-level consented flags.
+    const { data: record } = await supabase.from("client_records").select("intake").eq("member_id", user.id).single();
+    const currentIntake = record?.intake || {};
+    
     const { error } = await supabase.from("client_records").update({
       consented: true,
       consented_at: new Date().toISOString(),
       consent_version: CONSENT_VERSION,
+      intake: {
+        ...currentIntake,
+        consent_signature: signatureName,
+        consent_timestamp: new Date().toISOString(),
+      }
     }).eq("member_id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -243,7 +254,7 @@ export default function SignupPage() {
             <div data-testid="signup-consent-text" className="mt-6 max-h-80 overflow-y-auto rounded-xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
               {CONSENT_TEXT}
             </div>
-            <ConsentCheckbox onAccept={submitStep4} busy={busy} onBack={() => setStep(3)} />
+            <ConsentCheckbox onAccept={submitStep4} busy={busy} onBack={() => setStep(3)} expectedName={draft.full_name || ""} />
           </>
         )}
 
@@ -297,19 +308,39 @@ function NavRow({ onBack, busy, ctaTestId }: { onBack: () => void; busy: boolean
     </div>
   );
 }
-function ConsentCheckbox({ onAccept, busy, onBack }: { onAccept: () => void; busy: boolean; onBack: () => void }) {
+function ConsentCheckbox({ onAccept, busy, onBack, expectedName }: { onAccept: (sig: string) => void; busy: boolean; onBack: () => void; expectedName: string }) {
   const [checked, setChecked] = useState(false);
+  const [signature, setSignature] = useState("");
+  
+  const isValid = checked && signature.trim().toLowerCase() === expectedName.trim().toLowerCase() && signature.length > 0;
+
   return (
-    <>
-      <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-4">
-        <input type="checkbox" data-testid="signup-consent-checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-1" />
-        <span className="text-sm">I have read and agree to the VitalityX Service Agreement, including its disclaimers about medical care.</span>
+    <div className="mt-6 space-y-4">
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-[var(--vx-jade)] transition-colors">
+        <input type="checkbox" data-testid="signup-consent-checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border accent-[var(--vx-jade)]" />
+        <span className="text-sm">I have read and agree to the VitalityX Service Agreement, including its disclaimers about medical care, and I consent to telehealth services.</span>
       </label>
-      <div className="mt-6 flex items-center justify-between">
-        <button onClick={onBack} className="btn btn-ghost" data-testid="signup-back">← Back</button>
-        <button onClick={onAccept} disabled={!checked || busy} data-testid="signup-step4-submit" className="btn btn-primary">{busy ? "Saving…" : "I Agree & Continue →"}</button>
+      
+      <div className="rounded-lg border border-border bg-card p-4">
+        <label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Electronic Signature</label>
+        <p className="text-xs text-muted-foreground mb-3">Please type your full legal name (<strong className="text-foreground">{expectedName}</strong>) to electronically sign this agreement.</p>
+        <input 
+          type="text" 
+          value={signature} 
+          onChange={(e) => setSignature(e.target.value)} 
+          placeholder="Type your full name" 
+          className="vx-input font-display text-lg"
+          data-testid="signup-consent-signature"
+        />
       </div>
-    </>
+
+      <div className="mt-6 flex items-center justify-between pt-2">
+        <button onClick={onBack} className="btn btn-ghost" data-testid="signup-back">← Back</button>
+        <button onClick={() => onAccept(signature)} disabled={!isValid || busy} data-testid="signup-step4-submit" className="btn btn-primary">
+          {busy ? "Saving…" : "Sign & Continue →"}
+        </button>
+      </div>
+    </div>
   );
 }
 function ProgressBar({ step }: { step: number }) {

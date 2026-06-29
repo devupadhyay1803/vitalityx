@@ -9,9 +9,32 @@ type Tab = typeof tabs[number];
 
 export default function MyDataPage() {
   const [tab, setTab] = useState<Tab>("Biomarkers");
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    setUploading(true);
+    // Mock upload delay
+    setTimeout(() => {
+      setUploading(false);
+      alert("Labs uploaded successfully. Our clinical team will review them within 48 hours.");
+    }, 2000);
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-10" data-testid="member-data-page">
-      <h1 className="font-display text-4xl font-medium">My Data</h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+        <h1 className="font-display text-4xl font-medium">My Data</h1>
+        <div className="flex items-center gap-3">
+          <label className="btn btn-outline cursor-pointer whitespace-nowrap">
+            {uploading ? "Uploading..." : "Upload Past Labs"}
+            <input type="file" accept=".pdf,.csv" className="hidden" onChange={handleUpload} disabled={uploading} />
+          </label>
+          <a href="/supplements/dna-methylation-kit" className="btn btn-jade whitespace-nowrap">
+            Order Retest Kit
+          </a>
+        </div>
+      </div>
       <div className="mt-6 flex gap-2 border-b border-border">
         {tabs.map((t) => (
           <button key={t} data-testid={`data-tab-${t.toLowerCase().replace(" ","-")}`} onClick={() => setTab(t)}
