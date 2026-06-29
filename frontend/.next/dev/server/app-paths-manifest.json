@@ -1,4 +1,9 @@
 {
+  "/(public)/login/page": "app/(public)/login/page.js",
   "/(public)/page": "app/(public)/page.js",
-  "/member/messages/page": "app/member/messages/page.js"
+  "/(public)/privacy/page": "app/(public)/privacy/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/member/dashboard/page": "app/member/dashboard/page.js",
+  "/member/messages/page": "app/member/messages/page.js",
+  "/member/supplements/page": "app/member/supplements/page.js"
 }
