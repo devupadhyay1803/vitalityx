@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getInitials } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
+import { NotificationsPopover } from "@/components/portal/notifications-popover";
 import {
   Home, LineChart, ListChecks, CalendarDays, Package, MessageSquare,
   Activity, Settings, LogOut, Users, FileText,
@@ -76,6 +77,9 @@ export function PortalShell({ variant, user, profile, children }: {
           })}
         </nav>
         <div className="border-t border-border p-3 pb-28 md:pb-28">
+          <div className="mb-2">
+            <NotificationsPopover variant={variant} />
+          </div>
           <div className="flex items-center gap-2 rounded-lg p-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--vx-ink)] text-xs font-semibold text-white">
               {getInitials(profile.full_name || user.email)}

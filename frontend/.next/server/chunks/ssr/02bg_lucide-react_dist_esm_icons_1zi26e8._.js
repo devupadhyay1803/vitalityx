@@ -1,3 +1,0 @@
-module.exports=[78397,a=>{"use strict";let b=(0,a.i(41690).default)("calendar",[["path",{d:"M8 2v4",key:"1cmpym"}],["path",{d:"M16 2v4",key:"4m81vk"}],["rect",{width:"18",height:"18",x:"3",y:"4",rx:"2",key:"1hopcy"}],["path",{d:"M3 10h18",key:"8toen8"}]]);a.s(["Calendar",0,b],78397)},43551,a=>{"use strict";let b=(0,a.i(41690).default)("circle-check",[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"m9 12 2 2 4-4",key:"dzmm74"}]]);a.s(["CheckCircle2",0,b],43551)},91729,a=>{"use strict";let b=(0,a.i(41690).default)("circle",[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}]]);a.s(["Circle",0,b],91729)}];
-
-//# sourceMappingURL=02bg_lucide-react_dist_esm_icons_1zi26e8._.js.map
