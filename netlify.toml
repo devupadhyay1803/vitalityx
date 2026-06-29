@@ -1,0 +1,8 @@
+[build]
+  # Tell Netlify that our Next.js app lives in the frontend directory
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+# Note: Environment variables (NEXT_PUBLIC_SUPABASE_URL, etc.) 
+# still need to be set in the Netlify Dashboard -> Site settings -> Environment variables.
