@@ -20,6 +20,7 @@ const MEMBER_NAV: Nav[] = [
   { href: "/member/supplements", label: "Supplements", icon: Package,      testId: "sidebar-supplements" },
   { href: "/member/messages",    label: "Messages",    icon: MessageSquare,testId: "sidebar-messages" },
   { href: "/member/check-in",    label: "Check-in",    icon: Activity,     testId: "sidebar-checkin" },
+  { href: "/member/billing",     label: "Billing",     icon: FileText,     testId: "sidebar-billing" },
   { href: "/member/settings",    label: "Settings",    icon: Settings,     testId: "sidebar-settings" },
 ];
 

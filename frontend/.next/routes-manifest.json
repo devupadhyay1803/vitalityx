@@ -183,6 +183,12 @@
       "namedRegex": "^/login(?:/)?$"
     },
     {
+      "page": "/member/billing",
+      "regex": "^/member/billing(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/member/billing(?:/)?$"
+    },
+    {
       "page": "/member/check-in",
       "regex": "^/member/check\\-in(?:/)?$",
       "routeKeys": {},

@@ -24,6 +24,7 @@
   "/api/stripe/checkout/route": "app/api/stripe/checkout/route.js",
   "/api/stripe/subscription/route": "app/api/stripe/subscription/route.js",
   "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
+  "/member/billing/page": "app/member/billing/page.js",
   "/member/check-in/page": "app/member/check-in/page.js",
   "/member/dashboard/page": "app/member/dashboard/page.js",
   "/member/data/page": "app/member/data/page.js",

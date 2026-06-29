@@ -24,6 +24,7 @@
   "/api/stripe/checkout/route": "/api/stripe/checkout",
   "/api/stripe/subscription/route": "/api/stripe/subscription",
   "/api/stripe/webhook/route": "/api/stripe/webhook",
+  "/member/billing/page": "/member/billing",
   "/member/check-in/page": "/member/check-in",
   "/member/dashboard/page": "/member/dashboard",
   "/member/data/page": "/member/data",
