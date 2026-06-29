@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notifications";
 import { logAudit } from "@/lib/audit";
 import { CONSENT_VERSION } from "@/lib/consent";
 
@@ -37,8 +38,40 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Email Placeholder] Action: ${action} | Subject: ${subject} | Appointment ID: ${appointmentId}`);
 
-    // Optionally create a notification record for the user (if a notifications table exists)
-    // We can also let the UI handle the NotificationsPopover state directly via Supabase realtime.
+    if (action === "booked") {
+      // Create notification for staff
+      const { data: apt } = await supabase.from("appointments").select("staff_id").eq("id", appointmentId).single();
+      if (apt?.staff_id) {
+        await createNotification({
+          userId: apt.staff_id,
+          title: "New Appointment Booked",
+          message: "A member has scheduled a new session.",
+          type: "appointment_booked",
+          category: "appointments",
+          link: "/staff/sessions"
+        });
+      }
+    }
+    
+    if (action === "rescheduled" || action === "cancelled") {
+      // Notify both parties
+      const { data: apt } = await supabase.from("appointments").select("staff_id, member_id").eq("id", appointmentId).single();
+      if (apt) {
+        const type = action === "cancelled" ? "appointment_cancelled" : "appointment_rescheduled";
+        await createNotification({
+          userId: apt.staff_id,
+          title: `Appointment ${action === 'cancelled' ? 'Cancelled' : 'Rescheduled'}`,
+          message: `An appointment was ${action}.`,
+          type, category: "appointments", link: "/staff/sessions"
+        });
+        await createNotification({
+          userId: apt.member_id,
+          title: `Appointment ${action === 'cancelled' ? 'Cancelled' : 'Rescheduled'}`,
+          message: `Your appointment was ${action}.`,
+          type, category: "appointments", link: "/member/sessions"
+        });
+      }
+    }
 
     return NextResponse.json({ success: true, message: `Hook for ${action} executed` });
   } catch (error: any) {

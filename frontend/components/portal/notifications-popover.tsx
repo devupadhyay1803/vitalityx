@@ -1,20 +1,29 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bell, AlertCircle, Calendar, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Bell, AlertCircle, Calendar, MessageSquare, CheckCircle2, FlaskConical, FileText, UserPlus, FileSignature } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
 
 type Notification = {
   id: string;
-  type: "alert" | "reminder" | "message" | "success";
+  user_id: string;
   title: string;
-  description: string;
-  time: string;
-  read: boolean;
+  message: string;
+  type: string;
+  category: string;
+  link: string | null;
+  is_read: boolean;
+  created_at: string;
 };
 
 export function NotificationsPopover({ variant }: { variant: "member" | "staff" }) {
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const supabase = createClient();
+  const router = useRouter();
 
   // Close popover when clicking outside
   useEffect(() => {
@@ -27,34 +36,94 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [notifications, setNotifications] = useState<Notification[]>(
-    variant === "member" 
-    ? [
-        { id: "1", type: "alert", title: "Action Required: Fasting", description: "Remember to fast for 12 hours prior to your 8AM blood draw tomorrow.", time: "2 hours ago", read: false },
-        { id: "2", type: "reminder", title: "Daily Protocol", description: "It's time for your Evening Supplement Stack.", time: "4 hours ago", read: false },
-        { id: "3", type: "success", title: "Labs Received", description: "Your latest multi-omics panel has been processed.", time: "1 day ago", read: true },
-      ]
-    : [
-        { id: "1", type: "alert", title: "Critical Biomarker", description: "John Doe's ApoB levels require immediate review.", time: "10 mins ago", read: false },
-        { id: "2", type: "message", title: "New Message", description: "Sarah Smith asked a question about her methylation stack.", time: "1 hour ago", read: false },
-        { id: "3", type: "success", title: "Kit Delivered", description: "Welcome kit delivered to Michael Chen.", time: "2 hours ago", read: true },
-      ]
-  );
+  // Fetch initial notifications
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
 
-  const markAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+      if (!error && data) {
+        setNotifications(data as Notification[]);
+      }
+    };
+    fetchNotifications();
+  }, [supabase]);
+
+  // Subscribe to Realtime updates
+  useEffect(() => {
+    let channel: any;
+    const setupRealtime = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      channel = supabase.channel(`notifications_${user.id}`)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            setNotifications(prev => [payload.new as Notification, ...prev]);
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            setNotifications(prev => prev.map(n => n.id === payload.new.id ? (payload.new as Notification) : n));
+          }
+        )
+        .subscribe();
+    };
+    setupRealtime();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const markAllRead = async () => {
+    // Optimistic update
+    setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+    await fetch("/api/notifications/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "mark_all" }),
+    });
+  };
+
+  const handleNotificationClick = async (n: Notification) => {
+    if (!n.is_read) {
+      // Optimistic update
+      setNotifications(notifications.map(notif => notif.id === n.id ? { ...notif, is_read: true } : notif));
+      await fetch("/api/notifications/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark_one", notificationId: n.id }),
+      });
+    }
+    setOpen(false);
+    if (n.link) {
+      router.push(n.link);
+    }
   };
 
   const getIcon = (type: string) => {
-    switch(type) {
-      case "alert": return <AlertCircle size={16} className="text-coral-500" />;
-      case "reminder": return <Calendar size={16} className="text-amber-500" />;
-      case "message": return <MessageSquare size={16} className="text-blue-500" />;
-      case "success": return <CheckCircle2 size={16} className="text-[var(--vx-jade)]" />;
-      default: return <Bell size={16} />;
-    }
+    if (type.includes("appointment")) return <Calendar size={16} className="text-amber-500" />;
+    if (type.includes("message")) return <MessageSquare size={16} className="text-blue-500" />;
+    if (type.includes("lab")) return <FlaskConical size={16} className="text-purple-500" />;
+    if (type.includes("document")) return <FileText size={16} className="text-gray-500" />;
+    if (type.includes("consent")) return <FileSignature size={16} className="text-red-500" />;
+    if (type.includes("care_team")) return <UserPlus size={16} className="text-[var(--vx-jade)]" />;
+    if (type.includes("success") || type.includes("payment") || type.includes("renewed")) return <CheckCircle2 size={16} className="text-[var(--vx-jade)]" />;
+    return <AlertCircle size={16} className="text-coral-500" />;
   };
 
   return (
@@ -66,8 +135,8 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
         <div className="relative">
           <Bell size={16} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-coral-500 text-[8px] font-bold text-white shadow-sm ring-2 ring-card">
-              {unreadCount}
+            <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-[var(--vx-coral)] text-[8px] font-bold text-white shadow-sm ring-2 ring-card">
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </div>
@@ -87,37 +156,48 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
           </div>
           
           <div className="max-h-80 overflow-y-auto">
-            {notifications.map((n) => (
-              <div key={n.id} className={`flex gap-3 border-b border-border p-4 transition hover:bg-muted/30 ${!n.read ? "bg-muted/10" : ""}`}>
+            {notifications.slice(0, 10).map((n) => (
+              <button 
+                key={n.id} 
+                onClick={() => handleNotificationClick(n)}
+                className={`w-full text-left flex gap-3 border-b border-border p-4 transition hover:bg-muted/30 ${!n.is_read ? "bg-muted/10" : ""}`}
+              >
                 <div className="mt-0.5 shrink-0">
                   {getIcon(n.type)}
                 </div>
                 <div className="flex-1">
-                  <h4 className={`text-sm ${!n.read ? "font-semibold text-foreground" : "font-medium text-muted-foreground"}`}>
+                  <h4 className={`text-sm ${!n.is_read ? "font-semibold text-foreground" : "font-medium text-muted-foreground"}`}>
                     {n.title}
                   </h4>
                   <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                    {n.description}
+                    {n.message}
                   </p>
                   <span className="mt-2 block text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {n.time}
+                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                   </span>
                 </div>
-                {!n.read && (
-                  <div className="h-2 w-2 shrink-0 rounded-full bg-[var(--vx-jade)] mt-1.5" />
+                {!n.is_read && (
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-[var(--vx-coral)] mt-1.5" />
                 )}
-              </div>
+              </button>
             ))}
             
             {notifications.length === 0 && (
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                You're all caught up!
+              <div className="p-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-3">
+                <Bell size={24} className="text-muted-foreground opacity-50" />
+                <p>You&apos;re all caught up!</p>
               </div>
             )}
           </div>
           
           <div className="border-t border-border bg-muted/20 p-2">
-            <button className="w-full rounded-md py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition">
+            <button 
+              onClick={() => {
+                setOpen(false);
+                router.push(`/${variant}/notifications`);
+              }}
+              className="w-full rounded-md py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition"
+            >
               View all history
             </button>
           </div>

@@ -66,6 +66,19 @@ export default function StaffCareTeamManagement() {
       else toast.error(error.message);
     } else {
       toast.success("Clinician assigned");
+      // Trigger notification for member
+      fetch("/api/notifications/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: assigningTo,
+          title: "Care Team Updated",
+          message: `A new ${selectedRole} has been assigned to your care team.`,
+          type: "care_team_updated",
+          category: "team",
+          link: "/member/team"
+        })
+      });
       setAssigningTo(null);
     }
   }

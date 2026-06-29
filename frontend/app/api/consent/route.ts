@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notifications";
 import { logAudit } from "@/lib/audit";
 import { CONSENT_VERSION, CONSENT_TEXT } from "@/lib/consent";
 
@@ -58,6 +59,15 @@ export async function POST(req: NextRequest) {
       action: "Consent accepted",
       resourceType: "consent",
       metadata: { consent_version: CONSENT_VERSION },
+    });
+
+    await createNotification({
+      userId: user.id,
+      title: "Consent Signed",
+      message: `You have successfully signed version ${CONSENT_VERSION} of our consent forms.`,
+      type: "consent_required",
+      category: "consent",
+      link: "/member/documents"
     });
 
     return NextResponse.json({ success: true, message: "Consent recorded" });

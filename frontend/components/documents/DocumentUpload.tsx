@@ -108,7 +108,22 @@ export function DocumentUpload({ memberId, onUploadSuccess, replaceDocId, replac
       await logClientAudit("Document uploaded", {
         targetUserId: memberId,
         resourceType: "document",
-        metadata: { file_name: file.name, category }
+        resourceId: replaceDocId || "new_upload",
+        metadata: { category, title }
+      });
+      
+      // Notify the member
+      await fetch("/api/notifications/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: memberId,
+          title: "New Document Uploaded",
+          message: `A new document (${title}) has been uploaded to your profile by your care team.`,
+          type: "document_uploaded",
+          category: "documents",
+          link: "/member/documents"
+        })
       });
 
       toast.success(replaceDocId ? "Document replaced" : "Document uploaded successfully");
