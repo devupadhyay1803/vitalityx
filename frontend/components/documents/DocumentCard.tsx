@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileText, FileImage, Download, Eye, Trash2, Loader2, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { logClientAudit } from "@/lib/audit-client";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 
 type DocumentCardProps = {
@@ -41,6 +42,12 @@ export function DocumentCard({ document, isStaff, onDelete, onReplace }: Documen
   async function handleDownload() {
     const url = await getSignedUrl(true);
     if (url) {
+      await logClientAudit("Document downloaded", {
+        targetUserId: document.member_id,
+        resourceType: "document",
+        resourceId: document.id,
+        metadata: { file_name: document.file_name }
+      });
       const a = window.document.createElement("a");
       a.href = url;
       a.download = document.file_name;
@@ -52,7 +59,15 @@ export function DocumentCard({ document, isStaff, onDelete, onReplace }: Documen
 
   async function handlePreview() {
     const url = await getSignedUrl(false);
-    if (url) setPreviewUrl(url);
+    if (url) {
+      await logClientAudit("Document viewed", {
+        targetUserId: document.member_id,
+        resourceType: "document",
+        resourceId: document.id,
+        metadata: { file_name: document.file_name }
+      });
+      setPreviewUrl(url);
+    }
   }
 
   async function handleDelete() {

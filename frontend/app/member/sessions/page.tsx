@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { BookingModal } from "@/components/portal/BookingModal";
 import { RescheduleModal } from "@/components/portal/RescheduleModal";
 import { Video, MapPin, Clock, FileText } from "lucide-react";
+import { logClientAudit } from "@/lib/audit-client";
 import { format } from "date-fns";
 
 const supabase = createClient();
@@ -52,6 +53,13 @@ export default function SessionsPage() {
     if (error) return toast.error(error.message);
     
     fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "booked", appointmentId: newApt.id }) });
+    
+    await logClientAudit("Appointment created", {
+      resourceType: "appointment",
+      resourceId: newApt.id,
+      metadata: { service: bookingData.session_type, scheduled_at: bookingData.scheduled_start, staff_id: bookingData.staff_id }
+    });
+
     toast.success("Session booked successfully.");
     setShowBookingModal(false);
     mutate();
@@ -65,6 +73,12 @@ export default function SessionsPage() {
     if (error) return toast.error(error.message);
     
     fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "cancelled", appointmentId: id }) });
+    
+    await logClientAudit("Appointment cancelled", {
+      resourceType: "appointment",
+      resourceId: id
+    });
+
     toast.success("Session cancelled.");
     mutate();
   }
@@ -84,6 +98,13 @@ export default function SessionsPage() {
     if (error) return toast.error(error.message);
     
     fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "rescheduled", appointmentId: rescheduleAppointment.id }) });
+    
+    await logClientAudit("Appointment rescheduled", {
+      resourceType: "appointment",
+      resourceId: rescheduleAppointment.id,
+      metadata: { new_scheduled_at: newStart }
+    });
+
     toast.success("Session rescheduled.");
     setRescheduleAppointment(null);
     mutate();

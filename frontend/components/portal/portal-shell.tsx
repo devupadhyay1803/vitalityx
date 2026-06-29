@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "next-themes";
 import { getInitials } from "@/lib/utils";
+import { logClientAudit } from "@/lib/audit-client";
 import { useEffect, useState, useRef } from "react";
 import { NotificationsPopover } from "@/components/portal/notifications-popover";
 import {
   Home, LineChart, ListChecks, CalendarDays, Package, MessageSquare,
-  Activity, Settings, LogOut, Users, FileText, Moon, Sun,
+  Activity, Settings, LogOut, Users, FileText, Moon, Sun, ShieldAlert
 } from "lucide-react";
 
 type Nav = { href: string; label: string; icon: React.ComponentType<{ size?: number }>; testId: string };
@@ -32,6 +33,7 @@ const STAFF_NAV: Nav[] = [
   { href: "/staff/clients",    label: "Clients",  icon: Users,        testId: "sidebar-staff-clients" },
   { href: "/staff/sessions",   label: "Sessions", icon: CalendarDays, testId: "sidebar-staff-sessions" },
   { href: "/staff/messages",   label: "Messages", icon: MessageSquare,testId: "sidebar-staff-messages" },
+  { href: "/staff/audit",      label: "Audit Logs",icon: ShieldAlert, testId: "sidebar-staff-audit" },
   { href: "/staff/settings",   label: "Settings", icon: Settings,     testId: "sidebar-staff-settings" },
 ];
 
@@ -49,6 +51,7 @@ export function PortalShell({ variant, user, profile, children }: {
   void idle; // mounted via hook
 
   async function handleSignOut() {
+    await logClientAudit("Logout");
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
@@ -133,6 +136,7 @@ function useIdleTimeout(ms: number) {
     const reset = () => {
       if (ref.current) clearTimeout(ref.current);
       ref.current = setTimeout(async () => {
+        await logClientAudit("Logout", { metadata: { reason: "idle_timeout" } });
         const supabase = createClient();
         await supabase.auth.signOut();
         router.push("/login?idle=1");

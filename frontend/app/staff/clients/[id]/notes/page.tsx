@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { ClientTabs } from "@/components/staff/client-tabs";
 import { Lock, Trash2, Plus } from "lucide-react";
+import { logClientAudit } from "@/lib/audit-client";
 
 const supabase = createClient();
 
@@ -49,6 +50,13 @@ export default function NotesDocsPage({ params }: { params: Promise<{ id: string
     setAddingNote(false);
     if (error) return toast.error(error.message);
     
+    await logClientAudit("Note created", {
+      targetUserId: id,
+      resourceType: "note",
+      resourceId: note.id,
+      metadata: { length: newNote.length }
+    });
+    
     toast.success("Note added");
     setNewNote("");
     mutate();
@@ -66,6 +74,14 @@ export default function NotesDocsPage({ params }: { params: Promise<{ id: string
     }).eq("member_id", id);
 
     if (error) return toast.error(error.message);
+
+    await logClientAudit("Note updated", {
+      targetUserId: id,
+      resourceType: "note",
+      resourceId: noteId,
+      metadata: { status: "deleted" }
+    });
+
     mutate();
   }
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { logClientAudit } from "@/lib/audit-client";
 
 function LoginForm() {
   const router = useRouter();
@@ -38,6 +39,9 @@ function LoginForm() {
     }
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
     const dest = redirectTo || (profile?.role === "Member" ? "/member/dashboard" : "/staff/dashboard");
+    
+    await logClientAudit("Login");
+
     router.push(dest);
     router.refresh();
   }

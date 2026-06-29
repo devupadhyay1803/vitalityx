@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { ClientTabs } from "@/components/staff/client-tabs";
+import { logClientAudit } from "@/lib/audit-client";
 
 const supabase = createClient();
 
@@ -22,11 +23,26 @@ export default function ProtocolBuilder({ params }: { params: Promise<{ id: stri
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from("protocol_items").insert({ member_id: id, title, why_text: why, created_by: user!.id });
     if (error) return toast.error(error.message);
+    
+    await logClientAudit("Protocol created", {
+      targetUserId: id,
+      resourceType: "protocol",
+      metadata: { title }
+    });
+
     setTitle(""); setWhy(""); mutate();
   }
   async function remove(itemId: string) {
     const { error } = await supabase.from("protocol_items").update({ active: false }).eq("id", itemId);
     if (error) return toast.error(error.message);
+    
+    await logClientAudit("Protocol updated", {
+      targetUserId: id,
+      resourceType: "protocol",
+      resourceId: itemId,
+      metadata: { status: "removed" }
+    });
+
     mutate();
   }
 

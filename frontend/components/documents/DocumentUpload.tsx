@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { UploadCloud, Loader2, FileText, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { logClientAudit } from "@/lib/audit-client";
 
 const CATEGORIES = [
   "Lab Report",
@@ -103,6 +104,13 @@ export function DocumentUpload({ memberId, onUploadSuccess, replaceDocId, replac
       }
 
       setProgress(100);
+      
+      await logClientAudit("Document uploaded", {
+        targetUserId: memberId,
+        resourceType: "document",
+        metadata: { file_name: file.name, category }
+      });
+
       toast.success(replaceDocId ? "Document replaced" : "Document uploaded successfully");
       
       // Reset form

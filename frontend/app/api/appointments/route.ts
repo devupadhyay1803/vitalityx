@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logAudit } from "@/lib/audit";
 import { CONSENT_VERSION } from "@/lib/consent";
 
 export async function POST(req: NextRequest) {

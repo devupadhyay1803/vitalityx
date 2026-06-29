@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logAudit } from "@/lib/audit";
 import { CONSENT_VERSION, CONSENT_TEXT } from "@/lib/consent";
 
 export async function GET(req: NextRequest) {
@@ -45,8 +46,19 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error(error);
+      return NextResponse.json({ error: "Failed to record consent" }, { status: 500 });
     }
+
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+
+    await logAudit({
+      actorId: user.id,
+      actorRole: profile?.role || "Member",
+      action: "Consent accepted",
+      resourceType: "consent",
+      metadata: { consent_version: CONSENT_VERSION },
+    });
 
     return NextResponse.json({ success: true, message: "Consent recorded" });
   } catch (error: unknown) {
