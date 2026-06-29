@@ -61,7 +61,7 @@ export default function MemberDashboard() {
         <StatCard label="Biological age" value={latestBio !== null ? `${latestBio} yrs` : "—"} testId="stat-bio-age" />
         <StatCard label="Days on protocol" value={String(d?.days_on_protocol ?? 0)} testId="stat-days" />
         <StatCard label="7-day completion" value={`${completion7}%`} testId="stat-completion" />
-        <StatCard label="Next session" value={d?.next_session ? formatDate(d.next_session.scheduled_at) : "Not booked"} testId="stat-next-session" />
+        <StatCard label="Next session" value={d?.next_session ? formatDate(d.next_session.scheduled_start) : "Not booked"} testId="stat-next-session" />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
