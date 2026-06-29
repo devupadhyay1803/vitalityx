@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { CONSENT_VERSION } from "@/lib/consent";
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { data: consentRecord } = await supabase
+      .from("consent_records")
+      .select("consent_version")
+      .eq("user_id", user.id)
+      .eq("consent_version", CONSENT_VERSION)
+      .single();
+      
+    if (!consentRecord) {
+      return NextResponse.json({ error: "Forbidden: You must accept the latest Terms & Consent before proceeding." }, { status: 403 });
+    }
 
     const { action, appointmentId, memberId, staffId } = await req.json();
 

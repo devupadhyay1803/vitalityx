@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { PRODUCTS } from "@/lib/products";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { CONSENT_VERSION } from "@/lib/consent";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,6 +16,20 @@ export async function POST(req: NextRequest) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Enforce consent for authenticated users
+    if (user) {
+      const { data: consentRecord } = await supabase
+        .from("consent_records")
+        .select("consent_version")
+        .eq("user_id", user.id)
+        .eq("consent_version", CONSENT_VERSION)
+        .single();
+        
+      if (!consentRecord) {
+        return NextResponse.json({ error: "Forbidden: You must accept the latest Terms & Consent before proceeding." }, { status: 403 });
+      }
+    }
 
     // Build line_items from SERVER-SIDE catalog only
     const line_items = items
