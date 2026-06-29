@@ -26,10 +26,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
-    const raw = typeof window !== "undefined" ? localStorage.getItem("vx_cart") : null;
-    if (raw) {
-      try { setItems(JSON.parse(raw)); } catch {}
-    }
+    Promise.resolve().then(() => {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("vx_cart") : null;
+      if (raw) {
+        try { setItems(JSON.parse(raw)); } catch {}
+      }
+    });
   }, []);
 
   useEffect(() => {

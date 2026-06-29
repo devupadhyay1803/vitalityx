@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { PRODUCTS } from "@/lib/products";
 import { Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export function SupplementsSection() {
   const { add } = useCart();
@@ -23,8 +24,8 @@ export function SupplementsSection() {
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {list.map((p) => (
             <div key={p.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:shadow-xl" data-testid={`supplement-${p.id}`}>
-              <div className="aspect-square overflow-hidden bg-muted">
-                <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              <div className="aspect-square overflow-hidden bg-muted relative">
+                <Image src={p.image} alt={p.name} fill className="object-cover transition duration-500 group-hover:scale-105" />
               </div>
               <div className="flex flex-1 flex-col p-6">
                 <div className="flex items-center justify-between text-xs">

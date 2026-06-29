@@ -85,18 +85,22 @@ export default function ClientMessagesPage({ params }: { params: Promise<{ id: s
   }, [memberId]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`vx_staff_${memberId}_last_read_timestamps`);
-    if (saved) {
-      try {
-        setLastReadTimestamps(JSON.parse(saved));
-      } catch (e) {
-        console.warn(e);
+    Promise.resolve().then(() => {
+      const saved = localStorage.getItem(`vx_staff_${memberId}_last_read_timestamps`);
+      if (saved) {
+        try {
+          setLastReadTimestamps(JSON.parse(saved));
+        } catch (e) {
+          console.warn(e);
+        }
       }
-    }
+    });
   }, [memberId]);
 
   useEffect(() => {
-    loadAll();
+    Promise.resolve().then(() => {
+      loadAll();
+    });
 
     const channel = supabase.channel(`messages-staff-${memberId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
@@ -118,11 +122,13 @@ export default function ClientMessagesPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => {
     if (selectedPartner) {
-      const nowStr = new Date().toISOString();
-      setLastReadTimestamps((prev) => {
-        const next = { ...prev, [selectedPartner.id]: nowStr };
-        localStorage.setItem(`vx_staff_${memberId}_last_read_timestamps`, JSON.stringify(next));
-        return next;
+      Promise.resolve().then(() => {
+        const nowStr = new Date().toISOString();
+        setLastReadTimestamps((prev) => {
+          const next = { ...prev, [selectedPartner.id]: nowStr };
+          localStorage.setItem(`vx_staff_${memberId}_last_read_timestamps`, JSON.stringify(next));
+          return next;
+        });
       });
     }
   }, [selectedPartner, messages, memberId]);

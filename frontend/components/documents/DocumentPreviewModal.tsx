@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import Image from "next/image";
 
 export function DocumentPreviewModal({ url, mimeType, onClose }: { url: string; mimeType: string; onClose: () => void }) {
   const isImage = mimeType.startsWith("image/");
@@ -18,7 +19,9 @@ export function DocumentPreviewModal({ url, mimeType, onClose }: { url: string; 
         
         <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/20">
           {isImage && (
-            <img src={url} alt="Document Preview" className="max-w-full max-h-full object-contain rounded-lg" />
+            <div className="relative w-full h-full">
+              <Image src={url} alt="Document Preview" fill className="object-contain rounded-lg" />
+            </div>
           )}
           {isPdf && (
             <iframe src={`${url}#toolbar=0`} className="w-full h-full rounded-lg border-0" />

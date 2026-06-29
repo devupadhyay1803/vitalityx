@@ -45,7 +45,9 @@ export function NotificationHistory() {
   }, [filter, supabase]);
 
   useEffect(() => {
-    fetchNotifications();
+    Promise.resolve().then(() => {
+      fetchNotifications();
+    });
   }, [fetchNotifications]);
 
   const markAllRead = async () => {
