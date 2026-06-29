@@ -1,9 +1,5 @@
 {
-  "/(public)/login/page": "app/(public)/login/page.js",
+  "/(public)/cart/page": "app/(public)/cart/page.js",
   "/(public)/page": "app/(public)/page.js",
-  "/(public)/privacy/page": "app/(public)/privacy/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/member/dashboard/page": "app/member/dashboard/page.js",
-  "/member/messages/page": "app/member/messages/page.js",
-  "/member/supplements/page": "app/member/supplements/page.js"
+  "/api/stripe/checkout/route": "app/api/stripe/checkout/route.js"
 }
