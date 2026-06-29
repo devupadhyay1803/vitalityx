@@ -60,8 +60,8 @@ export default function GeneticsPage() {
           <div className="relative">
             <div className="aspect-[4/5] overflow-hidden rounded-3xl border border-border shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1532187863486-abf9db258b68?auto=format&fit=crop&w=800&q=80" 
-                alt="Abstract rendering of a DNA double helix"
+                src="https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?auto=format&fit=crop&w=800&q=80" 
+                alt="Clinical laboratory and genetic sequencing"
                 className="h-full w-full object-cover"
               />
             </div>
