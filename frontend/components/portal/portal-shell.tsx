@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "next-themes";
 import { getInitials } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 import { NotificationsPopover } from "@/components/portal/notifications-popover";
 import {
   Home, LineChart, ListChecks, CalendarDays, Package, MessageSquare,
-  Activity, Settings, LogOut, Users, FileText,
+  Activity, Settings, LogOut, Users, FileText, Moon, Sun,
 } from "lucide-react";
 
 type Nav = { href: string; label: string; icon: React.ComponentType<{ size?: number }>; testId: string };
@@ -41,6 +42,7 @@ export function PortalShell({ variant, user, profile, children }: {
 }) {
   const router = useRouter();
   const path = usePathname();
+  const { theme, setTheme } = useTheme();
   const nav = variant === "member" ? MEMBER_NAV : STAFF_NAV;
   const idle = useIdleTimeout(variant === "staff" ? 30 * 60 * 1000 : 60 * 60 * 1000);
   void idle; // mounted via hook
@@ -89,14 +91,24 @@ export function PortalShell({ variant, user, profile, children }: {
               <p className="truncate text-xs text-muted-foreground">{profile.role}</p>
             </div>
           </div>
-          <button onClick={handleSignOut} data-testid="sidebar-signout" className="mt-1 ml-10 flex w-[calc(100%-2.5rem)] items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10">
-            <LogOut size={14} /> Sign out
-          </button>
+          <div className="flex items-center justify-between px-3 mt-1">
+            <button onClick={handleSignOut} data-testid="sidebar-signout" className="flex items-center gap-2 rounded-lg py-2 text-sm text-destructive hover:bg-destructive/10 px-2 transition">
+              <LogOut size={14} /> Sign out
+            </button>
+            <button 
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")} 
+              className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition"
+              aria-label="Toggle Theme"
+            >
+              <Moon size={16} className="hidden dark:block" />
+              <Sun size={16} className="block dark:hidden" />
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Mobile bottom bar */}
-      <nav data-testid="portal-mobile-nav" className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-border bg-card md:hidden">
+      <nav data-testid="portal-mobile-nav" className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-border bg-card md:hidden pb-safe">
         {nav.slice(0, 5).map((item) => {
           const active = path === item.href || path.startsWith(item.href + "/");
           const Icon = item.icon;

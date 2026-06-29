@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import { CartProvider } from "@/components/cart/cart-provider";
 import "./globals.css";
 
@@ -22,10 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${montserrat.variable} font-sans antialiased`}>
-        <CartProvider>
-          {children}
-          <Toaster position="top-center" richColors closeButton />
-        </CartProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <CartProvider>
+            {children}
+            <Toaster position="top-center" richColors closeButton />
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
