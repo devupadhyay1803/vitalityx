@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ClientTabs } from "@/components/staff/client-tabs";
 import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -181,8 +182,7 @@ export default function ClientMessagesPage({ params }: { params: Promise<{ id: s
       {/* Left panel: thread list */}
       <div className="w-80 shrink-0 border-r border-border pr-4 flex flex-col h-full overflow-y-auto">
         <div className="mb-4">
-          <h2 className="font-display text-xl">Client Threads</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">for {clientProfile?.full_name || "Client"}</p>
+          <ClientTabs id={memberId} />
         </div>
         <div className="space-y-1.5 flex-1">
           {enrichedPartners.map((p) => {

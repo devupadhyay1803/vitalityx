@@ -47,12 +47,28 @@
       "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/messages(?:/)?$"
     },
     {
+      "page": "/staff/clients/[id]/notes",
+      "regex": "^/staff/clients/([^/]+?)/notes(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/notes(?:/)?$"
+    },
+    {
       "page": "/staff/clients/[id]/protocol",
       "regex": "^/staff/clients/([^/]+?)/protocol(?:/)?$",
       "routeKeys": {
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/protocol(?:/)?$"
+    },
+    {
+      "page": "/staff/clients/[id]/timeline",
+      "regex": "^/staff/clients/([^/]+?)/timeline(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/timeline(?:/)?$"
     },
     {
       "page": "/supplements/[slug]",

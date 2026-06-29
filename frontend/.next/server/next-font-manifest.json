@@ -84,10 +84,16 @@
     "[project]/vitalityx/frontend/app/staff/clients/[id]/messages/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
+    "[project]/vitalityx/frontend/app/staff/clients/[id]/notes/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
     "[project]/vitalityx/frontend/app/staff/clients/[id]/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/staff/clients/[id]/protocol/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
+    "[project]/vitalityx/frontend/app/staff/clients/[id]/timeline/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/staff/clients/page": [

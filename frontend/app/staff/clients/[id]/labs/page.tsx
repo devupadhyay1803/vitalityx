@@ -3,7 +3,7 @@ import { use, useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import Link from "next/link";
+import { ClientTabs } from "@/components/staff/client-tabs";
 
 const supabase = createClient();
 
@@ -54,12 +54,7 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
     <div className="mx-auto max-w-3xl px-6 py-10" data-testid="staff-labs-page">
       <h1 className="font-display text-4xl font-medium">Labs</h1>
 
-      <div className="mt-6 flex gap-4 border-b border-border pb-2 text-sm mb-6">
-        <Link href={`/staff/clients/${id}`} className="text-muted-foreground hover:text-foreground pb-2 px-1">Overview</Link>
-        <Link href={`/staff/clients/${id}/labs`} className="font-medium text-[var(--vx-ink)] border-b-2 border-[var(--vx-ink)] pb-2 px-1">Labs</Link>
-        <Link href={`/staff/clients/${id}/protocol`} className="text-muted-foreground hover:text-foreground pb-2 px-1">Protocol</Link>
-        <Link href={`/staff/clients/${id}/messages`} className="text-muted-foreground hover:text-foreground pb-2 px-1" data-testid="staff-client-messages-link">Messages</Link>
-      </div>
+      <ClientTabs id={id} />
 
       <div className="mt-6 vx-card p-5 space-y-3">
         <p className="font-medium">Upload lab PDF + record bio age</p>
