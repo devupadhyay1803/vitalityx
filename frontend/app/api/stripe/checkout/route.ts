@@ -9,7 +9,10 @@ export async function POST(req: NextRequest) {
     const { items, origin } = (await req.json()) as { items: { id: string; quantity: number }[]; origin: string };
     if (!Array.isArray(items) || items.length === 0) return NextResponse.json({ error: "No items" }, { status: 400 });
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json({ error: "Checkout service unavailable" }, { status: 503 });
+    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -58,7 +61,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url, session_id: session.id });
   } catch (e: any) {
-    console.error("[checkout] error", e);
     return NextResponse.json({ error: e?.message || "Internal error" }, { status: 500 });
   }
 }
