@@ -9,7 +9,8 @@ export function ClientTabs({ id }: { id: string }) {
     { name: "Timeline", path: `/staff/clients/${id}/timeline` },
     { name: "Labs", path: `/staff/clients/${id}/labs` },
     { name: "Protocol", path: `/staff/clients/${id}/protocol` },
-    { name: "Notes & Docs", path: `/staff/clients/${id}/notes` },
+    { name: "Notes", path: `/staff/clients/${id}/notes` },
+    { name: "Documents", path: `/staff/clients/${id}/documents` },
     { name: "Messages", path: `/staff/clients/${id}/messages` },
   ];
 

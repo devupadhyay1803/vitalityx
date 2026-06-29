@@ -22,7 +22,8 @@ const MEMBER_NAV: Nav[] = [
   { href: "/member/supplements", label: "Supplements", icon: Package,      testId: "sidebar-supplements" },
   { href: "/member/messages",    label: "Messages",    icon: MessageSquare,testId: "sidebar-messages" },
   { href: "/member/check-in",    label: "Check-in",    icon: Activity,     testId: "sidebar-checkin" },
-  { href: "/member/billing",     label: "Billing",     icon: FileText,     testId: "sidebar-billing" },
+  { href: "/member/documents",   label: "Documents",   icon: FileText,     testId: "sidebar-documents" },
+  { href: "/member/billing",     label: "Billing",     icon: Package,      testId: "sidebar-billing" }, // using Package since FileText is Docs
   { href: "/member/settings",    label: "Settings",    icon: Settings,     testId: "sidebar-settings" },
 ];
 

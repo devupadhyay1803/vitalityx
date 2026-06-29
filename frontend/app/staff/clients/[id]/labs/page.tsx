@@ -15,7 +15,6 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
   });
   const [bioAge, setBioAge] = useState("");
   const [testedAt, setTestedAt] = useState("");
-  const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
@@ -23,21 +22,13 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
 
   async function uploadLab() {
     const { data: { user } } = await supabase.auth.getUser();
-    let pdf_url: string | null = null;
-    if (file) {
-      const path = `${id}/${Date.now()}-${file.name}`;
-      const { error: upErr } = await supabase.storage.from("lab-pdfs").upload(path, file);
-      if (upErr) return toast.error(upErr.message);
-      const { data: pub } = supabase.storage.from("lab-pdfs").getPublicUrl(path);
-      pdf_url = pub.publicUrl;
-    }
     const { error } = await supabase.from("lab_results").insert({
       member_id: id, biological_age: bioAge ? Number(bioAge) : null, tested_at: testedAt || null,
-      pdf_url, uploaded_by: user!.id,
+      uploaded_by: user!.id,
     });
     if (error) return toast.error(error.message);
-    toast.success("Lab uploaded");
-    setBioAge(""); setTestedAt(""); setFile(null);
+    toast.success("Lab record saved");
+    setBioAge(""); setTestedAt("");
     mutate();
   }
 
@@ -57,11 +48,11 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
       <ClientTabs id={id} />
 
       <div className="mt-6 vx-card p-5 space-y-3">
-        <p className="font-medium">Upload lab PDF + record bio age</p>
+        <p className="font-medium">Record biological age</p>
+        <p className="text-xs text-muted-foreground mb-2">Note: To upload the actual Lab Report PDF, please use the <a href={`/staff/clients/${id}/documents`} className="underline text-[var(--vx-jade)]">Documents tab</a>.</p>
         <input data-testid="lab-tested-at" type="date" value={testedAt} onChange={(e) => setTestedAt(e.target.value)} className="vx-input" />
         <input data-testid="lab-bio-age" type="number" step="0.1" value={bioAge} onChange={(e) => setBioAge(e.target.value)} placeholder="Biological age (yrs)" className="vx-input" />
-        <input data-testid="lab-pdf" type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="block w-full text-sm" />
-        <button data-testid="lab-upload" onClick={uploadLab} className="btn btn-primary">Save lab</button>
+        <button data-testid="lab-upload" onClick={uploadLab} className="btn btn-primary">Save record</button>
       </div>
 
       <div className="mt-6 vx-card p-5 space-y-3">
@@ -82,7 +73,6 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
         {data?.map((l: any) => (
           <li key={l.id} className="vx-card p-3 text-sm flex justify-between">
             <span>Tested {l.tested_at} · Bio age {l.biological_age ?? "—"}</span>
-            {l.pdf_url && <a href={l.pdf_url} target="_blank" className="underline">PDF</a>}
           </li>
         ))}
       </ul>
