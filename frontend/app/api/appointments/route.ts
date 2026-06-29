@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, message: `Hook for ${action} executed` });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }

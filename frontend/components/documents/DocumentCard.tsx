@@ -7,8 +7,21 @@ import { toast } from "sonner";
 import { logClientAudit } from "@/lib/audit-client";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 
+export type DocumentType = {
+  id: string;
+  member_id: string;
+  title: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  storage_path: string;
+  category: string;
+  description?: string;
+  created_at: string;
+};
+
 type DocumentCardProps = {
-  document: Record<string, any>;
+  document: DocumentType;
   isStaff?: boolean;
   onDelete?: () => void;
   onReplace?: () => void;

@@ -7,7 +7,7 @@ export async function triggerNotification(params: {
   entityId?: string;
   entityType?: string;
   link?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }) {
   try {
     await fetch("/api/notifications/trigger", {

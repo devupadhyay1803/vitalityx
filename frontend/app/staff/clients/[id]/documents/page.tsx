@@ -4,7 +4,7 @@ import { use, useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { ClientTabs } from "@/components/staff/client-tabs";
-import { DocumentCard } from "@/components/documents/DocumentCard";
+import { DocumentCard, type DocumentType } from "@/components/documents/DocumentCard";
 import { DocumentUpload } from "@/components/documents/DocumentUpload";
 import { Search, Filter, Plus } from "lucide-react";
 
@@ -33,7 +33,7 @@ export default function StaffDocumentsPage({ params }: { params: Promise<{ id: s
     return data;
   });
 
-  const filteredDocs = (documents || []).filter((doc: Record<string, any>) => {
+  const filteredDocs = (documents || []).filter((doc: DocumentType) => {
     const matchesCategory = activeCategory === "All" || doc.category === activeCategory;
     const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase()) || 
                           doc.file_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -107,7 +107,7 @@ export default function StaffDocumentsPage({ params }: { params: Promise<{ id: s
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {filteredDocs.map((doc: Record<string, any>) => (
+          {filteredDocs.map((doc: DocumentType) => (
             <DocumentCard 
               key={doc.id} 
               document={doc} 

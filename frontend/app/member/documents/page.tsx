@@ -3,7 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
-import { DocumentCard } from "@/components/documents/DocumentCard";
+import { DocumentCard, type DocumentType } from "@/components/documents/DocumentCard";
 import { Search, LayoutGrid, List } from "lucide-react";
 
 const CATEGORIES = ["All", "Lab Report", "Genetics Report", "Protocol", "Invoice", "Membership", "Consent", "Medical Form", "Other"];
@@ -31,7 +31,7 @@ export default function MemberDocumentsPage() {
     return data;
   });
 
-  const filteredDocs = (documents || []).filter((doc: Record<string, any>) => {
+  const filteredDocs = (documents || []).filter((doc: DocumentType) => {
     const matchesCategory = activeCategory === "All" || doc.category === activeCategory;
     const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase()) || 
                           doc.file_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -91,7 +91,7 @@ export default function MemberDocumentsPage() {
         </div>
       ) : (
         <div className={viewMode === "list" ? "flex flex-col gap-4" : "grid sm:grid-cols-2 lg:grid-cols-3 gap-4"}>
-          {filteredDocs.map((doc: Record<string, any>) => (
+          {filteredDocs.map((doc: DocumentType) => (
             <DocumentCard key={doc.id} document={doc} />
           ))}
         </div>

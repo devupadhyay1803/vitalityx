@@ -23,13 +23,13 @@ export function BookingModal({
   preselectedCoachId,
 }: {
   onClose: () => void;
-  onBook: (data: any) => Promise<void>;
+  onBook: (data: { title: string; session_type: string; staff_id: string; scheduled_start: string; scheduled_end: string }) => Promise<void>;
   preselectedCoachId?: string | null;
 }) {
   const [step, setStep] = useState(1);
   const [sessionType, setSessionType] = useState(SESSION_TYPES[0]);
   const [coachId, setCoachId] = useState(preselectedCoachId || "");
-  const [coaches, setCoaches] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<{id: string; full_name: string}[]>([]);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [loading, setLoading] = useState(false);

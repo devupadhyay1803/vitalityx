@@ -25,8 +25,8 @@ export async function POST(req: Request) {
     const didUpdate = await triggerRecalculation(targetMemberId);
     
     return NextResponse.json({ success: true, updated: didUpdate });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Bio age trigger error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
   }
 }

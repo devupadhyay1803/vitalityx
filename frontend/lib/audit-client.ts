@@ -4,7 +4,7 @@ export async function logClientAudit(
     targetUserId?: string;
     resourceType?: string;
     resourceId?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 ) {
   try {

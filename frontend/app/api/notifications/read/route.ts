@@ -35,8 +35,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[POST /api/notifications/read]", error);
-    return NextResponse.json({ error: error.message || "Internal error" }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal error" }, { status: 500 });
   }
 }

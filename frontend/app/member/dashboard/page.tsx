@@ -56,10 +56,37 @@ export default function MemberDashboard() {
   if (isLoading) return <DashboardSkeleton />;
   if (error) return <div className="p-8 text-destructive" data-testid="dashboard-error">Failed to load dashboard: {String(error)}</div>;
 
-  const d = data!.data as any;
-  const team = data!.team as any[];
-  const bioHistory = data!.bioHistory as any[];
-  const items: any[] = d?.protocol_items || [];
+  interface DashboardData {
+    profile?: { full_name: string };
+    protocol_items?: { id: string; title: string }[];
+    completions_today?: string[];
+    completions_7d?: number;
+    next_session?: { scheduled_start: string };
+    coach?: { full_name: string };
+  }
+  interface TeamMember {
+    id: string;
+    role: string;
+    staff: {
+      full_name: string;
+      staff_profiles?: { profile_photo?: string; credentials?: string }[];
+    };
+  }
+  interface BioRecord {
+    chronological_age: number;
+    biological_age: number;
+    longevity_score: number;
+    metabolic_score: number;
+    inflammation_score: number;
+    confidence_score: number;
+    recovery_score: number;
+    calculated_at: string;
+  }
+
+  const d = data!.data as DashboardData;
+  const team = data!.team as TeamMember[];
+  const bioHistory = data!.bioHistory as BioRecord[];
+  const items: { id: string; title: string }[] = d?.protocol_items || [];
   const completedToday: string[] = d?.completions_today || [];
   const doneCount = items.filter((i) => completedToday.includes(i.id)).length;
   
@@ -239,7 +266,7 @@ export default function MemberDashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {team.map((a: any) => {
+            {team.map((a: TeamMember) => {
               const staff = a.staff;
               const profile = staff.staff_profiles?.[0] || {};
               return (

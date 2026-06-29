@@ -58,7 +58,7 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
 
   // Subscribe to Realtime updates
   useEffect(() => {
-    let channel: any;
+    let channel: ReturnType<typeof supabase.channel> | undefined;
     const setupRealtime = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
