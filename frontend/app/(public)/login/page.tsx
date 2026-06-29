@@ -14,6 +14,18 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Show contextual feedback if redirected here from auth callback or idle timeout
+  useState(() => {
+    const error = params.get("error");
+    const idle = params.get("idle");
+    if (error === "auth_callback_failed") {
+      toast.error("Your sign-in link has expired or is invalid. Please try again.");
+    }
+    if (idle === "1") {
+      toast.info("You were signed out due to inactivity.");
+    }
+  });
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);

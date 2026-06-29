@@ -59,7 +59,7 @@ export default function SignupPage() {
       email, password,
       options: {
         data: { full_name, role: "Member" },
-        emailRedirectTo: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (error) { setBusy(false); return toast.error(error.message); }
