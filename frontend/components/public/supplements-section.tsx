@@ -12,7 +12,7 @@ export function SupplementsSection() {
   return (
     <section id="supplements" className="border-t border-border py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">Featured Compounds</p>
+        <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">Featured Products</p>
         <h2 className="mt-3 text-center font-display text-4xl font-medium leading-tight md:text-5xl">
           Optimized Stacks &amp; Diagnostic Assays
         </h2>
