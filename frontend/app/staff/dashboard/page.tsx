@@ -5,12 +5,16 @@ export default async function StaffDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
+  const now = new Date();
+  const todayDate = new Date(now.toDateString());
+  const tomorrowDate = new Date(todayDate.getTime() + 86400000);
+
   const [{ count: clientCount }, { data: todaysAppointments }, { data: pendingAppointments }] = await Promise.all([
     supabase.from("client_records").select("*", { count: "exact", head: true }).eq("assigned_coach_id", user!.id),
     supabase.from("appointments").select("*, member:profiles!appointments_member_id_fkey(full_name)")
       .eq("staff_id", user!.id)
-      .gte("scheduled_start", new Date(new Date().toDateString()).toISOString())
-      .lt("scheduled_start", new Date(Date.now() + 86400000).toISOString())
+      .gte("scheduled_start", todayDate.toISOString())
+      .lt("scheduled_start", tomorrowDate.toISOString())
       .order("scheduled_start"),
     supabase.from("appointments").select("*, member:profiles!appointments_member_id_fkey(full_name)")
       .eq("staff_id", user!.id)
@@ -31,7 +35,7 @@ export default async function StaffDashboard() {
         <div>
           <h2 className="font-display text-xl">Today&apos;s schedule</h2>
           {!todaysAppointments?.length ? <p className="mt-3 text-sm text-muted-foreground">Nothing scheduled today.</p> :
-            <ul className="mt-4 space-y-3">{todaysAppointments.map((s: any) => (
+            <ul className="mt-4 space-y-3">{todaysAppointments.map((s: Record<string, any>) => (
               <li key={s.id} className="vx-card p-4 text-sm flex justify-between items-center">
                 <div>
                   <p className="font-medium">{s.member?.full_name || "Unknown Member"}</p>
@@ -48,7 +52,7 @@ export default async function StaffDashboard() {
         <div>
           <h2 className="font-display text-xl">Awaiting confirmation</h2>
           {!pendingAppointments?.length ? <p className="mt-3 text-sm text-muted-foreground">No pending requests.</p> :
-            <ul className="mt-4 space-y-3">{pendingAppointments.map((s: any) => (
+            <ul className="mt-4 space-y-3">{pendingAppointments.map((s: Record<string, any>) => (
               <li key={s.id} className="vx-card p-4 text-sm flex justify-between items-center">
                 <div>
                   <p className="font-medium">{s.member?.full_name || "Unknown Member"}</p>

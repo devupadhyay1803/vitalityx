@@ -13,7 +13,7 @@ const supabase = createClient();
 
 export default function SessionsPage() {
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [rescheduleAppointment, setRescheduleAppointment] = useState<any | null>(null);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<Record<string, any> | null>(null);
 
   const { data, mutate } = useSWR("appointments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -30,15 +30,15 @@ export default function SessionsPage() {
 
   if (!data) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
 
-  const upcoming = data.appointments.filter((s: any) => 
+  const upcoming = data.appointments.filter((s: Record<string, any>) => 
     new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed"
   );
   
-  const past = data.appointments.filter((s: any) => 
+  const past = data.appointments.filter((s: Record<string, any>) => 
     new Date(s.scheduled_start) < new Date() || s.status === "Cancelled" || s.status === "Completed"
-  ).sort((a: any, b: any) => new Date(b.scheduled_start).getTime() - new Date(a.scheduled_start).getTime());
+  ).sort((a: Record<string, any>, b: Record<string, any>) => new Date(b.scheduled_start).getTime() - new Date(a.scheduled_start).getTime());
 
-  async function book(bookingData: any) {
+  async function book(bookingData: Record<string, any>) {
     const { error, data: newApt } = await supabase.from("appointments").insert({
       member_id: data!.userId,
       staff_id: bookingData.staff_id,
@@ -98,7 +98,7 @@ export default function SessionsPage() {
 
       <h2 className="mt-10 font-display text-xl">Upcoming</h2>
       {upcoming.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No upcoming sessions. Book one to stay on track.</p> :
-        <div className="mt-4 grid gap-4">{upcoming.map((s: any) => (
+        <div className="mt-4 grid gap-4">{upcoming.map((s: Record<string, any>) => (
           <AppointmentCard 
             key={s.id} 
             appointment={s} 
@@ -110,7 +110,7 @@ export default function SessionsPage() {
 
       <h2 className="mt-12 font-display text-xl">Past & Cancelled</h2>
       {past.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No past sessions.</p> :
-        <div className="mt-4 grid gap-4 opacity-75">{past.map((s: any) => (
+        <div className="mt-4 grid gap-4 opacity-75">{past.map((s: Record<string, any>) => (
           <AppointmentCard key={s.id} appointment={s} readOnly />
         ))}</div>
       }
@@ -133,7 +133,7 @@ export default function SessionsPage() {
   );
 }
 
-function AppointmentCard({ appointment, onReschedule, onCancel, readOnly }: any) {
+function AppointmentCard({ appointment, onReschedule, onCancel, readOnly }: { appointment: Record<string, any>, onReschedule?: () => void, onCancel?: () => void, readOnly?: boolean }) {
   const isPast = new Date(appointment.scheduled_start) < new Date();
   
   return (

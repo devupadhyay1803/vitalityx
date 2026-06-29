@@ -132,3 +132,34 @@ create policy "appointments_staff_delete" on public.appointments
   for delete using (
     auth.uid() = staff_id or exists (select 1 from public.profiles where id = auth.uid() and role in ('Admin', 'Ops'))
   );
+
+-- 5. Fix Profiles RLS so Members can see the list of Coaches when booking
+drop policy if exists "profiles_coach_public_read" on public.profiles;
+create policy "profiles_coach_public_read" on public.profiles
+  for select using (role = 'Coach');
+
+-- 6. Trigger to prevent double-booking (Race Condition Fix)
+create or replace function public.check_appointment_overlap()
+returns trigger
+language plpgsql
+as $$
+begin
+  if exists (
+    select 1 from public.appointments
+    where staff_id = new.staff_id
+      and status in ('Scheduled', 'Confirmed', 'Rescheduled')
+      and id != new.id
+      and scheduled_start < new.scheduled_end
+      and scheduled_end > new.scheduled_start
+  ) then
+    raise exception 'The selected time slot is already booked for this coach.';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists prevent_double_booking on public.appointments;
+create trigger prevent_double_booking
+  before insert or update on public.appointments
+  for each row execute function public.check_appointment_overlap();
+
