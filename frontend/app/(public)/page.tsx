@@ -10,7 +10,7 @@ import { ContactForm } from "@/components/public/contact-form";
 const TRUST = ["Clinician-led", "Science-backed", "Privacy-first", "FDA Registered Labs"];
 
 const FEATURES = [
-  { Icon: Dna,           title: "Genetic Analysis",                body: "Decode your DNA to uncover specific genetic variants that influence your health span, cognitive aging, and athletic performance." },
+  { Icon: Dna,           title: "Genetic Analysis",                image: "https://images.unsplash.com/photo-1532187863486-abf9db258b68?auto=format&fit=crop&w=600&q=70", body: "Decode your DNA to uncover specific genetic variants that influence your health span, cognitive aging, and athletic performance." },
   { Icon: Microscope,    title: "Advanced Lab Testing",            body: "Track 65+ critical biomarkers with comprehensive CLIA-certified diagnostics to gain unprecedented visibility into your biology." },
   { Icon: Activity,      title: "Biological Age Tracking",         body: "Monitor the rate at which your cells are aging and see precisely how your lifestyle and clinical protocols reverse the clock over time." },
   { Icon: FlaskConical,  title: "Personalized Supplement Protocols", body: "Receive tailor-made nutritional, nutraceutical, and lifestyle plans engineered specifically for your unique biological baseline." },
@@ -29,7 +29,7 @@ const ADVANTAGES = [
   { title: "Personalized Care",            image: "https://images.unsplash.com/photo-1638202993928-7267aad84c31?auto=format&fit=crop&w=600&q=70", body: "Every protocol is custom-engineered based on your unique genetic makeup, biomarker levels, and lifestyle goals. We never use one-size-fits-all templates." },
   { title: "Evidence-Based Recommendations", image: "/assets/clinical_lab.jpg",                                                                  body: "Our interventions are strictly backed by peer-reviewed longevity science and clinical trials. No fads, just proven biological optimizations." },
   { title: "Expert Clinical Team",         image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=70", body: "You're paired with elite longevity physicians and performance coaches who actively monitor your progress and refine your protocols." },
-  { title: "Continuous Monitoring",        image: "https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?auto=format&fit=crop&w=600&q=70", body: "Your health is dynamic. We use continuous biometric feedback loops to adjust your stack as your biological age improves." },
+  { title: "Continuous Monitoring",        image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b0?auto=format&fit=crop&w=600&q=70", body: "Your health is dynamic. We use continuous biometric feedback loops to adjust your stack as your biological age improves." },
   { title: "Data Privacy & Security",      image: "/assets/secure_vault.jpg",                                                                    body: "Your genetic and clinical data is locked behind HIPAA-compliant, enterprise-grade encryption. Your health information is never sold." },
   { title: "Premium Member Experience",    image: "/assets/hero_woman.jpg",                                                                      body: "Enjoy a frictionless healthcare experience. From at-home testing to our elegant mobile dashboard, we've designed every touchpoint for your convenience." },
 ];
@@ -182,11 +182,14 @@ export default function LandingPage() {
             A complete ecosystem built around precision medicine, advanced diagnostics, and personalized health optimization.
           </p>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ Icon, title, body }) => (
-              <div key={title} className="vx-card p-7 transition hover:shadow-md">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--vx-jade)]/15 text-[var(--vx-ink)]"><Icon size={20} /></div>
-                <h3 className="mt-5 font-display text-xl">{title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+            {FEATURES.map(({ Icon, title, body, image }) => (
+              <div key={title} className="vx-card overflow-hidden transition hover:shadow-md flex flex-col">
+                {image && <img src={image} alt={title} className="h-32 w-full object-cover" loading="lazy" />}
+                <div className="p-7 flex-1">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--vx-jade)]/15 text-[var(--vx-ink)]"><Icon size={20} /></div>
+                  <h3 className="mt-5 font-display text-xl">{title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+                </div>
               </div>
             ))}
           </div>
