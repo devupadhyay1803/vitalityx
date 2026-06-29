@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(public)/layout,_N_T_/(public)/genetics/layout,_N_T_/(public)/genetics/page,_N_T_/genetics"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KHB1YmxpYyk/genetics/__PAGE__",
+    "/!KHB1YmxpYyk/genetics",
+    "/!KHB1YmxpYyk",
+    "/_index",
+    "/_head"
+  ]
+}

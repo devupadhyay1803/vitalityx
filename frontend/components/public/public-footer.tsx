@@ -15,13 +15,15 @@ export function PublicFooter() {
             </p>
           </div>
           <FooterCol title="Platform" links={[
-            { href: "/#science", label: "The Science" },
-            { href: "/#protocols", label: "Protocols" },
-            { href: "/#supplements", label: "Supplements" },
+            { href: "/programs", label: "Programs" },
+            { href: "/genetics", label: "Genetics" },
+            { href: "/labs", label: "Labs" },
+            { href: "/supplements", label: "Store" },
             { href: "/signup", label: "Get Started" },
           ]} />
           <FooterCol title="Resources" links={[
             { href: "/help", label: "Help & FAQ" },
+            { href: "/contact", label: "Contact Us" },
             { href: "/gina", label: "GINA Protection" },
             { href: "/login", label: "Member Login" },
           ]} />

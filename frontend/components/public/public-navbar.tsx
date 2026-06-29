@@ -91,10 +91,11 @@ export function PublicNavbar() {
         </Link>
 
         <nav className="hidden gap-8 md:flex">
-          <Link href="/#science" className="text-sm text-muted-foreground hover:text-foreground">The Science</Link>
-          <Link href="/#protocols" className="text-sm text-muted-foreground hover:text-foreground">Protocols</Link>
-          <Link href="/#supplements" className="text-sm text-muted-foreground hover:text-foreground">Supplements</Link>
-          <Link href="/help" className="text-sm text-muted-foreground hover:text-foreground">Help</Link>
+          <Link href="/programs" className="text-sm text-muted-foreground hover:text-foreground">Programs</Link>
+          <Link href="/genetics" className="text-sm text-muted-foreground hover:text-foreground">Genetics</Link>
+          <Link href="/labs" className="text-sm text-muted-foreground hover:text-foreground">Labs</Link>
+          <Link href="/supplements" className="text-sm text-muted-foreground hover:text-foreground">Store</Link>
+          <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">Contact</Link>
         </nav>
 
         <div className="flex items-center gap-3">

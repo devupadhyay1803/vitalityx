@@ -53,6 +53,14 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/staff/clients/(?<nxtPid>[^/]+?)/protocol(?:/)?$"
+    },
+    {
+      "page": "/supplements/[slug]",
+      "regex": "^/supplements/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/supplements/(?<nxtPslug>[^/]+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -117,10 +125,22 @@
       "namedRegex": "^/cart(?:/)?$"
     },
     {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
       "page": "/forgot-password",
       "regex": "^/forgot\\-password(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/forgot\\-password(?:/)?$"
+    },
+    {
+      "page": "/genetics",
+      "regex": "^/genetics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/genetics(?:/)?$"
     },
     {
       "page": "/gina",
@@ -133,6 +153,12 @@
       "regex": "^/help(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/help(?:/)?$"
+    },
+    {
+      "page": "/labs",
+      "regex": "^/labs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/labs(?:/)?$"
     },
     {
       "page": "/login",
@@ -201,6 +227,12 @@
       "namedRegex": "^/privacy(?:/)?$"
     },
     {
+      "page": "/programs",
+      "regex": "^/programs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programs(?:/)?$"
+    },
+    {
       "page": "/reset-password",
       "regex": "^/reset\\-password(?:/)?$",
       "routeKeys": {},
@@ -253,6 +285,12 @@
       "regex": "^/staff/settings(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/staff/settings(?:/)?$"
+    },
+    {
+      "page": "/supplements",
+      "regex": "^/supplements(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/supplements(?:/)?$"
     },
     {
       "page": "/terms",

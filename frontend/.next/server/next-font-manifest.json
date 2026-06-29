@@ -3,13 +3,22 @@
     "[project]/vitalityx/frontend/app/(public)/cart/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
+    "[project]/vitalityx/frontend/app/(public)/contact/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
     "[project]/vitalityx/frontend/app/(public)/forgot-password/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
+    "[project]/vitalityx/frontend/app/(public)/genetics/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/(public)/gina/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/(public)/help/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
+    "[project]/vitalityx/frontend/app/(public)/labs/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/(public)/login/page": [
@@ -24,10 +33,19 @@
     "[project]/vitalityx/frontend/app/(public)/privacy/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
+    "[project]/vitalityx/frontend/app/(public)/programs/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
     "[project]/vitalityx/frontend/app/(public)/reset-password/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/(public)/signup/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
+    "[project]/vitalityx/frontend/app/(public)/supplements/[slug]/page": [
+      "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
+    ],
+    "[project]/vitalityx/frontend/app/(public)/supplements/page": [
       "static/media/e8f2fbee2754df70-s.p.1dqa_6e_ad4sj.woff2"
     ],
     "[project]/vitalityx/frontend/app/(public)/terms/page": [
