@@ -1,3 +1,0 @@
-module.exports=[36284,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(32687);a.n(d("[project]/vitalityx/frontend/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},5471,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(32687);a.n(d("[project]/vitalityx/frontend/node_modules/next/dist/client/components/builtin/global-error.js"))},26292,a=>{"use strict";a.i(36284);var b=a.i(5471);a.n(b)},16440,a=>{a.n(a.i(26292))}];
-
-//# sourceMappingURL=02bg_next_dist_client_components_builtin_global-error_18tnqvn.js.map

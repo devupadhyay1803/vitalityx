@@ -1,5 +1,0 @@
-{
-  "/(public)/cart/page": "app/(public)/cart/page.js",
-  "/(public)/page": "app/(public)/page.js",
-  "/api/stripe/checkout/route": "app/api/stripe/checkout/route.js"
-}
