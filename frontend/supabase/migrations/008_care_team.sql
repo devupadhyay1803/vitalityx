@@ -2,6 +2,8 @@
 -- VitalityX Health - Care Team Module
 -- =====================================================================
 
+create extension if not exists moddatetime schema extensions;
+
 create table if not exists public.staff_profiles (
   id uuid primary key references public.profiles(id) on delete cascade,
   credentials text,
@@ -59,8 +61,8 @@ create policy "care_team_assignments_staff_delete" on public.care_team_assignmen
 -- Triggers for updated_at
 create trigger handle_updated_at_staff_profiles
   before update on public.staff_profiles
-  for each row execute procedure moddatetime (updated_at);
+  for each row execute procedure extensions.moddatetime (updated_at);
 
 create trigger handle_updated_at_care_team_assignments
   before update on public.care_team_assignments
-  for each row execute procedure moddatetime (updated_at);
+  for each row execute procedure extensions.moddatetime (updated_at);
