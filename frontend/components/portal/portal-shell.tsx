@@ -17,6 +17,7 @@ type Nav = { href: string; label: string; icon: React.ComponentType<{ size?: num
 
 const MEMBER_NAV: Nav[] = [
   { href: "/member/dashboard",   label: "Dashboard",   icon: Home,         testId: "sidebar-dashboard" },
+  { href: "/member/team",        label: "Care Team",   icon: Users,        testId: "sidebar-team" },
   { href: "/member/data",        label: "My Data",     icon: LineChart,    testId: "sidebar-data" },
   { href: "/member/protocol",    label: "Protocol",    icon: ListChecks,   testId: "sidebar-protocol" },
   { href: "/member/sessions",    label: "Sessions",    icon: CalendarDays, testId: "sidebar-sessions" },
@@ -29,8 +30,9 @@ const MEMBER_NAV: Nav[] = [
 ];
 
 const STAFF_NAV: Nav[] = [
-  { href: "/staff/dashboard",  label: "Overview", icon: Home,         testId: "sidebar-staff-dashboard" },
+  { href: "/staff/dashboard",  label: "Dashboard", icon: Activity,     testId: "sidebar-staff-dashboard" },
   { href: "/staff/clients",    label: "Clients",  icon: Users,        testId: "sidebar-staff-clients" },
+  { href: "/staff/care-team",  label: "Care Team",icon: Users,        testId: "sidebar-staff-care-team" },
   { href: "/staff/sessions",   label: "Sessions", icon: CalendarDays, testId: "sidebar-staff-sessions" },
   { href: "/staff/messages",   label: "Messages", icon: MessageSquare,testId: "sidebar-staff-messages" },
   { href: "/staff/audit",      label: "Audit Logs",icon: ShieldAlert, testId: "sidebar-staff-audit" },

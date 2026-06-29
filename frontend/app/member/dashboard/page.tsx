@@ -6,7 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { timeOfDayGreeting, formatDate, getInitials } from "@/lib/utils";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { CheckCircle2, Circle, Calendar, MessageSquare, FlaskConical } from "lucide-react";
+import { Suspense } from "react";
+import { ArrowRight, Activity, Droplet, FileText, CheckCircle2, ChevronRight, Users, Calendar, MessageSquare, FlaskConical } from "lucide-react";
+import { format } from "date-fns";
+import Image from "next/image";
 import { toast } from "sonner";
 
 const supabase = createClient();
@@ -15,8 +18,26 @@ async function fetchDashboard() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("no user");
   const { data, error } = await supabase.rpc("get_member_dashboard", { p_member_id: user.id });
-  if (error) throw error;
-  return { user, data };
+  if (error) {
+    console.error(error);
+  }
+
+  // Also fetch Care Team for preview
+  const { data: teamAssignments } = await supabase
+    .from("care_team_assignments")
+    .select(`
+      id, role,
+      staff:profiles!care_team_assignments_staff_id_fkey(
+        id, full_name,
+        staff_profiles(profile_photo, credentials)
+      )
+    `)
+    .eq("member_id", user.id)
+    .limit(3);
+
+  const team = teamAssignments || [];
+
+  return { user, data, team };
 }
 
 export default function MemberDashboard() {
@@ -28,6 +49,7 @@ export default function MemberDashboard() {
   if (error) return <div className="p-8 text-destructive" data-testid="dashboard-error">Failed to load dashboard: {String(error)}</div>;
 
   const d = data!.data as any;
+  const team = data!.team as any[];
   const items: any[] = d?.protocol_items || [];
   const completedToday: string[] = d?.completions_today || [];
   const doneCount = items.filter((i) => completedToday.includes(i.id)).length;
@@ -92,7 +114,7 @@ export default function MemberDashboard() {
           )}
         </div>
 
-        {/* Team */}
+        {/* Team preview */}
         <div data-testid="my-team" className="vx-card p-6">
           <h2 className="font-display text-xl">My team</h2>
           {d?.coach ? (
@@ -153,6 +175,49 @@ export default function MemberDashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Care Team Section */}
+      <div className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-xl">My Care Team</h2>
+          <Link href="/member/team" className="text-sm font-medium text-[var(--vx-ink)] hover:underline flex items-center gap-1">
+            View All <ChevronRight size={14} />
+          </Link>
+        </div>
+        
+        {team.length === 0 ? (
+          <div className="vx-card p-6 flex flex-col items-center justify-center text-center border-dashed border-2">
+            <Users className="w-8 h-8 text-muted-foreground opacity-50 mb-3" />
+            <p className="text-sm text-muted-foreground max-w-xs">Your care team is being assembled and will appear here soon.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {team.map((a: any) => {
+              const staff = a.staff;
+              const profile = staff.staff_profiles?.[0] || {};
+              return (
+                <Link href="/member/team" key={a.id} className="vx-card p-4 flex items-center gap-4 hover:border-[var(--vx-jade)]/30 transition-colors group">
+                  <div className="w-12 h-12 rounded-full border-2 border-muted bg-muted overflow-hidden relative shadow-sm shrink-0">
+                    {profile.profile_photo ? (
+                      <Image src={profile.profile_photo} alt={staff.full_name} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-display bg-[var(--vx-jade)]/10 text-[var(--vx-jade)]">
+                        {staff.full_name?.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate group-hover:text-[var(--vx-ink)] transition-colors">
+                      {staff.full_name} {profile.credentials ? `, ${profile.credentials}` : ""}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{a.role}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
