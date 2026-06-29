@@ -147,10 +147,10 @@ export function PublicNavbar() {
             </div>
           ) : (
             <>
-              <Link href="/login" data-testid="navbar-sign-in" className="btn btn-ghost">
+            <Link href="/login" data-testid="navbar-sign-in" className="btn btn-ghost whitespace-nowrap px-3 text-sm sm:px-5">
                 Sign In
               </Link>
-              <Link href="/signup" data-testid="navbar-get-started" className="btn btn-primary hidden sm:inline-flex">
+              <Link href="/signup" data-testid="navbar-get-started" className="btn btn-primary hidden whitespace-nowrap sm:inline-flex">
                 Get Started
               </Link>
             </>
