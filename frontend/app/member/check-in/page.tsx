@@ -25,6 +25,14 @@ export default function CheckInPage() {
     const { error } = await supabase.from("daily_checkins").insert({ member_id: user.id, sleep_score: sleep, energy_score: energy, mood_score: mood });
     if (error) return toast.error(error.message);
     toast.success("Check-in recorded");
+    
+    // Trigger recalculation asynchronously in background
+    fetch("/api/bio-age/trigger", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ member_id: user.id })
+    }).catch(e => console.error("Recalculation error:", e));
+
     mutate();
   }
 

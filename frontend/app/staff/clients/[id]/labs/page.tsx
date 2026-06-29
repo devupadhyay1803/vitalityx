@@ -38,6 +38,14 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
     });
     if (error) return toast.error(error.message);
     toast.success("Biomarker added");
+    
+    // Trigger recalculation asynchronously in background
+    fetch("/api/bio-age/trigger", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ member_id: id })
+    }).catch(e => console.error("Recalculation error:", e));
+
     setName(""); setValue(""); setUnit("");
   }
 

@@ -22,7 +22,7 @@ async function fetchDashboard() {
     console.error(error);
   }
 
-  // Also fetch Care Team for preview
+  // Fetch Care Team for preview
   const { data: teamAssignments } = await supabase
     .from("care_team_assignments")
     .select(`
@@ -35,9 +35,17 @@ async function fetchDashboard() {
     .eq("member_id", user.id)
     .limit(3);
 
-  const team = teamAssignments || [];
+  // Fetch Biological Age Engine Records
+  const { data: bioRecords } = await supabase
+    .from("biological_age_records")
+    .select("*")
+    .eq("member_id", user.id)
+    .order("calculated_at", { ascending: true });
 
-  return { user, data, team };
+  const team = teamAssignments || [];
+  const bioHistory = bioRecords || [];
+
+  return { user, data, team, bioHistory };
 }
 
 export default function MemberDashboard() {
@@ -50,11 +58,14 @@ export default function MemberDashboard() {
 
   const d = data!.data as any;
   const team = data!.team as any[];
+  const bioHistory = data!.bioHistory as any[];
   const items: any[] = d?.protocol_items || [];
   const completedToday: string[] = d?.completions_today || [];
   const doneCount = items.filter((i) => completedToday.includes(i.id)).length;
-  const bioAgeTrend = d?.bio_age_trend || [];
-  const latestBio = bioAgeTrend.length ? bioAgeTrend[bioAgeTrend.length - 1].biological_age : null;
+  
+  // Biological Age Engine
+  const latestBio = bioHistory.length ? bioHistory[bioHistory.length - 1] : null;
+  
   const completion7 = items.length ? Math.round((d?.completions_7d || 0) / (items.length * 7) * 100) : 0;
 
   async function toggle(itemId: string) {
@@ -80,11 +91,34 @@ export default function MemberDashboard() {
 
       {/* Stat row */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Biological age" value={latestBio !== null ? `${latestBio} yrs` : "—"} testId="stat-bio-age" />
-        <StatCard label="Days on protocol" value={String(d?.days_on_protocol ?? 0)} testId="stat-days" />
+        <StatCard label="Biological age" value={latestBio ? `${latestBio.biological_age} yrs` : "—"} testId="stat-bio-age" />
+        <StatCard label="Longevity score" value={latestBio ? `${latestBio.longevity_score}` : "—"} testId="stat-longevity" />
         <StatCard label="7-day completion" value={`${completion7}%`} testId="stat-completion" />
         <StatCard label="Next session" value={d?.next_session ? formatDate(d.next_session.scheduled_start) : "Not booked"} testId="stat-next-session" />
       </div>
+
+      {latestBio && (
+        <div className="mt-6 grid gap-4 lg:grid-cols-4">
+          <div className="vx-card p-4 bg-muted/20 border-border/50">
+            <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Age Diff</p>
+            <p className={`font-display text-xl ${latestBio.biological_age < latestBio.chronological_age ? 'text-[var(--vx-jade)]' : 'text-coral-500'}`}>
+              {latestBio.biological_age - latestBio.chronological_age > 0 ? '+' : ''}{(latestBio.biological_age - latestBio.chronological_age).toFixed(1)} yrs
+            </p>
+          </div>
+          <div className="vx-card p-4 bg-muted/20 border-border/50">
+            <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Metabolic Risk</p>
+            <p className="font-display text-xl">{latestBio.metabolic_score}/100</p>
+          </div>
+          <div className="vx-card p-4 bg-muted/20 border-border/50">
+            <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Inflammation Risk</p>
+            <p className="font-display text-xl">{latestBio.inflammation_score}/100</p>
+          </div>
+          <div className="vx-card p-4 bg-muted/20 border-border/50">
+            <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Confidence Score</p>
+            <p className="font-display text-xl">{latestBio.confidence_score}%</p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {/* Today's protocol */}
@@ -136,42 +170,54 @@ export default function MemberDashboard() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Bio age trend */}
         <div data-testid="bio-age-chart" className="vx-card p-6 lg:col-span-2">
-          <h2 className="font-display text-xl">Biological age trend</h2>
-          {bioAgeTrend.length === 0 ? (
+          <h2 className="font-display text-xl">Biological Age & Longevity Trend</h2>
+          {bioHistory.length === 0 ? (
             <div className="mt-6 rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
               <FlaskConical size={24} className="mx-auto mb-3 opacity-50" />
-              Your first lab panel will appear here.
+              Your biological age history will appear here once computed.
             </div>
           ) : (
-            <div className="mt-4 h-56">
+            <div className="mt-4 h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={bioAgeTrend}>
-                  <XAxis dataKey="tested_at" stroke="currentColor" fontSize={11} />
-                  <YAxis stroke="currentColor" fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="biological_age" stroke="oklch(0.78 0.16 160)" strokeWidth={2} />
+                <LineChart data={bioHistory}>
+                  <XAxis dataKey="calculated_at" stroke="currentColor" fontSize={11} tickFormatter={(val) => new Date(val).toLocaleDateString()} />
+                  <YAxis yAxisId="left" stroke="currentColor" fontSize={11} domain={['dataMin - 2', 'dataMax + 2']} />
+                  <YAxis yAxisId="right" orientation="right" stroke="currentColor" fontSize={11} domain={[0, 100]} />
+                  <Tooltip labelFormatter={(val) => new Date(val).toLocaleString()} contentStyle={{ backgroundColor: '#111', border: '1px solid #333' }} />
+                  <Line yAxisId="left" type="monotone" dataKey="biological_age" name="Bio Age" stroke="var(--vx-jade)" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line yAxisId="right" type="monotone" dataKey="longevity_score" name="Longevity Score" stroke="#8884d8" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           )}
         </div>
 
-        {/* Recent biomarkers */}
-        <div data-testid="recent-biomarkers" className="vx-card p-6">
-          <h2 className="font-display text-xl">Recent biomarkers</h2>
+        {/* Insights & Recommendations */}
+        <div data-testid="bio-insights" className="vx-card p-6">
+          <h2 className="font-display text-xl">AI Insights</h2>
           <div className="mt-4 space-y-3">
-            {(d?.latest_biomarkers || []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No biomarkers logged yet.</p>
-            ) : (
-              (d.latest_biomarkers as any[]).map((b) => (
-                <div key={b.id} className="flex items-center justify-between border-b border-border/60 pb-2 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">{b.name}</p>
-                    <p className="text-xs text-muted-foreground">{b.value} {b.unit}</p>
-                  </div>
-                  <span className={`badge ${b.status === "optimal" ? "badge-jade" : b.status === "borderline" ? "badge-amber" : "badge-coral"}`}>{b.status}</span>
+            {latestBio ? (
+              <>
+                <div className="p-3 bg-[var(--vx-jade)]/10 text-[var(--vx-jade)] border border-[var(--vx-jade)]/20 rounded-lg text-sm">
+                  <p className="font-medium">Longevity Score is {latestBio.longevity_score}</p>
+                  <p className="opacity-90 text-xs mt-1">Based on {bioHistory.length} data points. Your confidence score is {latestBio.confidence_score}%.</p>
                 </div>
-              ))
+                {latestBio.biological_age < latestBio.chronological_age && (
+                  <div className="p-3 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-lg text-sm">
+                    <p className="font-medium">Excellent Aging Rate</p>
+                    <p className="opacity-90 text-xs mt-1">You are biologically { (latestBio.chronological_age - latestBio.biological_age).toFixed(1) } years younger than your calendar age.</p>
+                  </div>
+                )}
+                {latestBio.recovery_score < 70 && (
+                  <div className="p-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-lg text-sm">
+                    <p className="font-medium">Recovery Needs Attention</p>
+                    <p className="opacity-90 text-xs mt-1">Focus on consistent sleep routines to boost your recovery score.</p>
+                  </div>
+                )}
+                <Link href="/member/sessions" className="btn btn-outline w-full mt-2">Book Coaching Session</Link>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Log biomarkers and check-ins to generate insights.</p>
             )}
           </div>
         </div>

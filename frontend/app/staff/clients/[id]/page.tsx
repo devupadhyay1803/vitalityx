@@ -14,12 +14,13 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
   const admin = createAdminClient();
   await admin.from("staff_access_logs").insert({ staff_id: user.id, member_id: id, resource_type: "client_overview" });
 
-  const [{ data: profile }, { data: cr }, { data: items }, { data: biomarkers }, { data: labs }] = await Promise.all([
+  const [{ data: profile }, { data: cr }, { data: items }, { data: biomarkers }, { data: labs }, { data: bioRecords }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", id).single(),
     supabase.from("client_records").select("*").eq("member_id", id).single(),
     supabase.from("protocol_items").select("*").eq("member_id", id).eq("active", true),
     supabase.from("biomarkers").select("*").eq("member_id", id).order("tested_at", { ascending: false }).limit(10),
     supabase.from("lab_results").select("*").eq("member_id", id).order("tested_at", { ascending: false }),
+    supabase.from("biological_age_records").select("*").eq("member_id", id).order("calculated_at", { ascending: false }).limit(1),
   ]);
 
   if (!profile) notFound();
@@ -31,9 +32,21 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
 
       <ClientTabs id={id} />
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <Card title="Intake"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(cr?.intake || {}, null, 2)}</pre></Card>
         <Card title="Consent">{cr?.consented ? <p className="text-sm text-[var(--vx-jade)]">Consented v{cr.consent_version} on {cr.consented_at?.split("T")[0]}</p> : <p className="text-sm text-muted-foreground">Not consented</p>}</Card>
+        <Card title="Biological Age Engine">
+          {bioRecords && bioRecords.length > 0 ? (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center"><span className="text-sm">Bio Age</span><span className="font-display text-lg">{bioRecords[0].biological_age} yrs</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm">Longevity</span><span className="font-display text-lg">{bioRecords[0].longevity_score}</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm">Confidence</span><span className="font-display text-lg">{bioRecords[0].confidence_score}%</span></div>
+              <p className="text-[10px] text-muted-foreground mt-2">Calculated {new Date(bioRecords[0].calculated_at).toLocaleDateString()}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No bio age computed.</p>
+          )}
+        </Card>
       </div>
 
       <h2 className="mt-10 font-display text-xl">Protocol ({items?.length || 0} items)</h2>
