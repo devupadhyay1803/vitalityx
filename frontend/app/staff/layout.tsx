@@ -8,7 +8,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirectTo=/staff/dashboard");
-  const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle();
   if (!profile || profile.role === "Member") redirect("/member/dashboard");
   return (
     <>

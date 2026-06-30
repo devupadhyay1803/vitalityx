@@ -19,7 +19,7 @@ export default function SessionsPage() {
   const { data, mutate } = useSWR("appointments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-    const { data: cr } = await supabase.from("client_records").select("assigned_coach_id").eq("member_id", user.id).single();
+    const { data: cr } = await supabase.from("client_records").select("assigned_coach_id").eq("member_id", user.id).maybeSingle();
     const { data: appointments } = await supabase
       .from("appointments")
       .select("*, coach:profiles!appointments_staff_id_fkey(full_name)")

@@ -26,3 +26,4 @@ yarn-debug.log*
 # IDE
 .idea/
 .vscode/
+.env*

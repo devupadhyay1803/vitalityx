@@ -3,12 +3,17 @@ import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
+import { ChevronLeft, MessageSquare } from "lucide-react";
+import { useUser } from "@/components/portal/user-provider";
 
 const supabase = createClient();
 type Msg = { id: string; sender_id: string; receiver_id: string; content: string; created_at: string };
 
 export default function MessagesPage() {
-  const [me, setMe] = useState<string | null>(null);
+  const { user, profile } = useUser();
+  const [me, setMe] = useState<string>(user.id);
+  const [myRole, setMyRole] = useState<string>(profile.role);
+  const [assignments, setAssignments] = useState<any[]>([]);
   const [assignedCoachId, setAssignedCoachId] = useState<string | null>(null);
   const [partners, setPartners] = useState<any[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<any | null>(null);
@@ -19,33 +24,53 @@ export default function MessagesPage() {
 
   async function loadAll() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setMe(user.id);
-
       // Fetch care team assignments to find partners
-      const { data: assignments } = await supabase
+      const { data: assignmentsData, error: assignmentsError } = await supabase
         .from("care_team_assignments")
-        .select("staff_id, member_id")
+        .select("staff_id, member_id, role")
         .or(`member_id.eq.${user.id},staff_id.eq.${user.id}`);
+      if (assignmentsError) console.warn("Error loading assignments:", assignmentsError);
+      
+      let loadedAssignments = assignmentsData || [];
+
+      if (profile.role === "Member" && loadedAssignments.length === 0) {
+        try {
+          const res = await fetch("/api/care-team/auto-assign", { method: "POST" });
+          const resData = await res.json();
+          if (resData.success) {
+            const { data: reassignments } = await supabase
+              .from("care_team_assignments")
+              .select("staff_id, member_id, role")
+              .or(`member_id.eq.${user.id},staff_id.eq.${user.id}`);
+            if (reassignments) {
+              loadedAssignments = reassignments;
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("Failed to auto-assign care team:", fetchErr);
+        }
+      }
+      
+      setAssignments(loadedAssignments);
       
       // We keep assignedCoachId for backwards compatibility but we'll use partnerIds primarily
-      setAssignedCoachId(assignments?.[0]?.staff_id || null);
+      setAssignedCoachId(loadedAssignments?.[0]?.staff_id || null);
 
       // Fetch all messages involving user
-      const { data: allMsgs } = await supabase
+      const { data: allMsgs, error: msgsError } = await supabase
         .from("messages")
         .select("*")
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order("created_at");
+      if (msgsError) console.warn("Error loading messages:", msgsError);
       
       const msgs = allMsgs || [];
       setMessages(msgs);
 
       // Find all partner IDs
       const partnerIds = new Set<string>();
-      if (assignments) {
-        assignments.forEach((a) => {
+      if (loadedAssignments) {
+        loadedAssignments.forEach((a) => {
           if (a.staff_id !== user.id) partnerIds.add(a.staff_id);
           if (a.member_id !== user.id) partnerIds.add(a.member_id);
         });
@@ -56,26 +81,32 @@ export default function MessagesPage() {
       });
 
       if (partnerIds.size > 0) {
-        // Fetch profiles of all these partners
+        // Fetch profiles of all these partners including staff profiles (for photos)
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("id, full_name, role, email")
+          .select(`
+            id, full_name, role, email, health_goal,
+            staff_profiles(profile_photo)
+          `)
           .in("id", Array.from(partnerIds));
         
         const loadedPartners = profiles || [];
         setPartners(loadedPartners);
 
-        // Default to opening assigned coach thread on load (or first, preserving current selection)
+        // Default to opening first active thread on load if active threads exist
+        // Otherwise, keep selectedPartner as null so they see the contacts cards grid!
         setSelectedPartner((current: any) => {
           if (current) {
             const updated = loadedPartners.find((p) => p.id === current.id);
             return updated || current;
           }
-          if (assignments && assignments.length > 0) {
-            const firstPartnerId = assignments[0].staff_id === user.id ? assignments[0].member_id : assignments[0].staff_id;
-            return loadedPartners.find((p) => p.id === firstPartnerId) || loadedPartners[0] || null;
+          
+          const activePartnerIds = new Set(msgs.map(m => m.sender_id === user.id ? m.receiver_id : m.sender_id));
+          if (activePartnerIds.size > 0) {
+            const firstActivePartner = loadedPartners.find(p => activePartnerIds.has(p.id));
+            return firstActivePartner || null;
           }
-          return loadedPartners[0] || null;
+          return null;
         });
       }
     } catch (e) {
@@ -163,12 +194,21 @@ export default function MessagesPage() {
         new Date(m.created_at) > new Date(lastRead)
     ).length;
 
+    const careTeamRole = assignments?.find(
+      (a: any) => a.staff_id === p.id || a.member_id === p.id
+    )?.role;
+
     return {
       ...p,
+      displayRole: careTeamRole || p.role,
       lastMessageContent: lastMsg ? lastMsg.content : "No messages yet",
       unreadCount,
+      hasMessages: thread.length > 0
     };
   });
+
+  const activePartners = enrichedPartners.filter(p => p.hasMessages);
+  const inactivePartners = enrichedPartners.filter(p => !p.hasMessages);
 
   const selectedThreadMessages = selectedPartner
     ? messages.filter(
@@ -183,8 +223,8 @@ export default function MessagesPage() {
       {/* Left panel: thread list */}
       <div className="w-80 shrink-0 border-r border-border pr-4 flex flex-col h-full overflow-y-auto">
         <h2 className="font-display text-xl mb-4">Conversations</h2>
-        <div className="space-y-1.5 flex-1">
-          {enrichedPartners.map((p) => {
+        <div className="space-y-1.5 flex-1 animate-in fade-in duration-200">
+          {activePartners.map((p) => {
             const isActive = selectedPartner?.id === p.id;
             return (
               <button
@@ -200,7 +240,7 @@ export default function MessagesPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between items-baseline">
                     <p className="font-medium text-sm truncate">{p.full_name || "Staff"}</p>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{p.role}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{p.displayRole}</span>
                   </div>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">{p.lastMessageContent}</p>
                 </div>
@@ -212,8 +252,8 @@ export default function MessagesPage() {
               </button>
             );
           })}
-          {enrichedPartners.length === 0 && (
-            <p className="text-sm text-muted-foreground">No conversations yet.</p>
+          {activePartners.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">No conversations yet.</p>
           )}
         </div>
       </div>
@@ -223,9 +263,17 @@ export default function MessagesPage() {
         {selectedPartner ? (
           <>
             <div className="border-b border-border pb-4 flex justify-between items-center">
-              <div>
-                <h1 className="font-display text-2xl">{selectedPartner.full_name || "Staff"}</h1>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mt-0.5">{selectedPartner.role}</p>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setSelectedPartner(null)} 
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mr-2 bg-muted/40 hover:bg-muted/80 px-2.5 py-1 rounded-lg transition"
+                >
+                  <ChevronLeft size={14} /> Back
+                </button>
+                <div>
+                  <h1 className="font-display text-2xl">{selectedPartner.full_name || "Staff"}</h1>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mt-0.5">{selectedPartner.displayRole}</p>
+                </div>
               </div>
             </div>
             {/* Messages list */}
@@ -260,8 +308,102 @@ export default function MessagesPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-            Select a conversation to start messaging
+          <div className="flex-1 flex flex-col h-full justify-center">
+            {activePartners.length === 0 ? (
+              // Full contacts grid for new users
+              <div className="max-w-3xl mx-auto w-full px-4 py-8 animate-in fade-in zoom-in-95 duration-350">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-tr from-[var(--vx-sapphire)]/25 to-[var(--vx-jade)]/25 rounded-full blur-xl mx-auto -mb-12 opacity-60" />
+                  <MessageSquare className="w-10 h-10 text-[var(--vx-jade)] mx-auto mb-3" />
+                  <h2 className="font-display text-2xl font-medium tracking-tight">
+                    {myRole === "Member" ? "Your Care Team" : "Your Clients"}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+                    {myRole === "Member" 
+                      ? "Start a direct secure conversation with your assigned longevity specialists."
+                      : "Initiate direct messaging with your assigned members to guide their protocol."}
+                  </p>
+                </div>
+                
+                {inactivePartners.length === 0 ? (
+                  <div className="text-center p-8 bg-card rounded-2xl border border-border">
+                    <p className="text-sm text-muted-foreground">
+                      {myRole === "Member"
+                        ? "No care team specialists assigned yet. Please contact support."
+                        : "No clients assigned to your care team yet."}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                    {inactivePartners.map((p) => {
+                      const photo = p.staff_profiles?.[0]?.profile_photo;
+                      return (
+                        <div key={p.id} className="vx-card p-6 flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg hover:border-[var(--vx-jade)]/40" data-testid={`contact-card-${p.id}`}>
+                          {/* Avatar */}
+                          <div className="w-16 h-16 rounded-full overflow-hidden mb-4 bg-muted relative shadow-sm shrink-0 border border-border">
+                            {photo ? (
+                              <img src={photo} alt={p.full_name} className="object-cover w-full h-full" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xl font-semibold bg-[var(--vx-jade)]/10 text-[var(--vx-jade)]">
+                                {getInitials(p.full_name || p.email)}
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="font-display text-lg font-medium truncate w-full">{p.full_name}</h3>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1 font-medium">{p.displayRole}</p>
+                          {myRole === "Member" && p.email && (
+                            <p className="text-xs text-muted-foreground/60 truncate w-full mt-0.5">{p.email}</p>
+                          )}
+                          {myRole !== "Member" && p.health_goal && (
+                            <p className="text-xs text-[var(--vx-sapphire)] truncate w-full mt-2 bg-[var(--vx-sapphire)]/5 px-3 py-1 rounded-full font-medium">{p.health_goal}</p>
+                          )}
+                          <button 
+                            onClick={() => setSelectedPartner(p)}
+                            className="btn btn-primary w-full mt-5 text-sm"
+                            data-testid={`start-chat-${p.id}`}
+                          >
+                            Start Conversation
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Default prompt + smaller new conversation grid for existing users
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-200">
+                <MessageSquare className="w-12 h-12 text-muted-foreground mb-3 opacity-60" />
+                <p className="text-muted-foreground text-sm">Select a conversation to start messaging</p>
+                {inactivePartners.length > 0 && (
+                  <div className="mt-8 w-full max-w-2xl text-left">
+                    <h3 className="font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 border-b border-border pb-2">Start a New Conversation</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {inactivePartners.map((p) => (
+                        <div key={p.id} className="vx-card p-4 flex items-center justify-between gap-4 hover:border-[var(--vx-jade)]/40 transition-colors">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--vx-ink)] text-sm font-semibold text-white">
+                              {getInitials(p.full_name || p.email)}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm truncate">{p.full_name}</p>
+                              <p className="text-xs text-muted-foreground truncate uppercase tracking-wider">{p.displayRole}</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => setSelectedPartner(p)}
+                            className="btn btn-primary px-3 py-1.5 text-xs shrink-0"
+                            data-testid={`start-chat-${p.id}`}
+                          >
+                            Message
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

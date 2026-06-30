@@ -10,15 +10,25 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { data: consentRecord } = await supabase
-      .from("client_records")
-      .select("consent_version")
-      .eq("member_id", user.id)
-      .eq("consent_version", CONSENT_VERSION)
-      .single();
-      
-    if (!consentRecord) {
-      return NextResponse.json({ error: "Forbidden: You must accept the latest Terms & Consent before proceeding." }, { status: 403 });
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isStaff = profile?.role && profile.role !== "Member";
+
+    if (!isStaff) {
+      const { data: consentRecord } = await supabase
+        .from("client_records")
+        .select("consent_version")
+        .eq("member_id", user.id)
+        .eq("consent_version", CONSENT_VERSION)
+        .maybeSingle();
+        
+      if (!consentRecord) {
+        return NextResponse.json({ error: "Forbidden: You must accept the latest Terms & Consent before proceeding." }, { status: 403 });
+      }
     }
 
     const { action, appointmentId, memberId, staffId } = await req.json();
@@ -40,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "booked") {
       // Create notification for staff
-      const { data: apt } = await supabase.from("appointments").select("staff_id").eq("id", appointmentId).single();
+      const { data: apt } = await supabase.from("appointments").select("staff_id").eq("id", appointmentId).maybeSingle();
       if (apt?.staff_id) {
         await createNotification({
           userId: apt.staff_id,
@@ -55,7 +65,7 @@ export async function POST(req: NextRequest) {
     
     if (action === "rescheduled" || action === "cancelled") {
       // Notify both parties
-      const { data: apt } = await supabase.from("appointments").select("staff_id, member_id").eq("id", appointmentId).single();
+      const { data: apt } = await supabase.from("appointments").select("staff_id, member_id").eq("id", appointmentId).maybeSingle();
       if (apt) {
         const type = action === "cancelled" ? "appointment_cancelled" : "appointment_rescheduled";
         await createNotification({
