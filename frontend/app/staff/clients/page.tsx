@@ -12,10 +12,11 @@ export default function ClientsPage() {
   const { data } = useSWR("staff-clients", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
-    const { data: cr } = await supabase
-      .from("client_records").select("member_id, assigned_coach_id, created_at, profiles!client_records_member_id_fkey(id, full_name, email, health_goal)")
-      .eq("assigned_coach_id", user.id);
-    return cr || [];
+    const { data: assignments } = await supabase
+      .from("care_team_assignments")
+      .select("member_id, created_at, profiles!care_team_assignments_member_id_fkey(id, full_name, email, health_goal)")
+      .eq("staff_id", user.id);
+    return assignments || [];
   });
 
   const filtered = (data || []).filter((c: any) => {

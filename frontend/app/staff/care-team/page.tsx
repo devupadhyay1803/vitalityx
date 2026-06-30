@@ -24,7 +24,7 @@ export default function StaffCareTeamManagement() {
       .from("profiles")
       .select(`
         id, full_name, email,
-        care_team_assignments(
+        care_team_assignments!care_team_assignments_member_id_fkey(
           id, role, is_primary,
           staff:profiles!care_team_assignments_staff_id_fkey(id, full_name)
         )

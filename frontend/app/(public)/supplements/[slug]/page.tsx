@@ -5,11 +5,12 @@ import { PRODUCTS } from "@/lib/products";
 import { useCart } from "@/components/cart/cart-provider";
 import { Star, Check, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { use, useState } from "react";
 import { toast } from "sonner";
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = PRODUCTS[params.slug];
+export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = use(params);
+  const product = PRODUCTS[resolvedParams.slug];
   const { add: addToCart } = useCart();
   const [adding, setAdding] = useState(false);
 
@@ -91,6 +92,52 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground bg-muted/50 py-3 rounded-full">
               <ShieldCheck size={14} /> 100% Satisfaction Guarantee. Hassle-free returns.
             </div>
+
+            <div className="mt-12 space-y-8 border-t border-border pt-12">
+              <div>
+                <h3 className="font-display text-2xl font-semibold mb-4">Core Benefits</h3>
+                <ul className="grid gap-3">
+                  {product.benefits?.map((benefit, i) => (
+                    <li key={i} className="flex gap-3 items-start bg-muted/30 p-4 rounded-xl">
+                      <div className="bg-[var(--vx-jade)]/20 p-1 rounded-full shrink-0">
+                        <Check size={16} className="text-[var(--vx-jade)]" />
+                      </div>
+                      <span className="text-sm font-medium">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-display text-2xl font-semibold mb-4">Active Ingredients</h3>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                  {product.ingredients?.map((ingredient, i) => (
+                    <li key={i}>{ingredient}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Products */}
+        <div className="mt-32 border-t border-border pt-16">
+          <h2 className="font-display text-3xl font-semibold text-center mb-10">Frequently Bought Together</h2>
+          <div className="grid gap-6 sm:grid-cols-3 max-w-5xl mx-auto">
+            {Object.values(PRODUCTS)
+              .filter(p => p.id !== product.id)
+              .slice(0, 3)
+              .map(p => (
+                <Link key={p.id} href={`/supplements/${p.id}`} className="group block border border-border rounded-2xl overflow-hidden hover:border-[var(--vx-jade)]/50 transition">
+                  <div className="aspect-[4/3] bg-muted/20 p-6 flex items-center justify-center">
+                    <img src={p.image} alt={p.name} className="h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-500" />
+                  </div>
+                  <div className="p-4 border-t border-border">
+                    <h4 className="font-medium truncate">{p.name}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">${(p.priceCents / 100).toFixed(2)}</p>
+                  </div>
+                </Link>
+            ))}
           </div>
         </div>
       </div>

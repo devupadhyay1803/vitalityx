@@ -147,6 +147,18 @@ export default function SignupPage() {
         consent_timestamp: new Date().toISOString(),
       }
     }).eq("member_id", user.id);
+
+    if (!error) {
+      // Also write to consent_records so ConsentGuard recognizes it
+      await supabase.from("consent_records").insert({
+        user_id: user.id,
+        consent_version: CONSENT_VERSION,
+        consent_text: CONSENT_TEXT,
+        ip_address: "signup",
+        user_agent: navigator.userAgent
+      });
+    }
+
     setBusy(false);
     if (error) return toast.error(error.message);
     setStep(5);

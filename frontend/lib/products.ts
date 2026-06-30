@@ -9,6 +9,8 @@ export type Product = {
   category: string;
   rating: number;
   reviewCount: number;
+  ingredients: string[];
+  benefits: string[];
 };
 
 export const PRODUCTS: Record<string, Product> = {
@@ -22,6 +24,8 @@ export const PRODUCTS: Record<string, Product> = {
     category: "Active Supplement",
     rating: 4.7,
     reviewCount: 95,
+    ingredients: ["Omega-3 Fatty Acids (EPA/DHA) 2000mg", "Astaxanthin 4mg", "Vitamin E (D-alpha tocopherol)"],
+    benefits: ["Supports cardiovascular health", "Promotes joint mobility", "Enhances cognitive function and focus"],
   },
   "nmn-resveratrol": {
     id: "nmn-resveratrol",
@@ -33,6 +37,8 @@ export const PRODUCTS: Record<string, Product> = {
     category: "Active Supplement",
     rating: 4.9,
     reviewCount: 128,
+    ingredients: ["Nicotinamide Mononucleotide (NMN) 500mg", "Trans-Resveratrol 250mg", "Black Pepper Extract 5mg"],
+    benefits: ["Boosts cellular energy production (NAD+)", "Activates longevity pathways (Sirtuins)", "Supports healthy aging and DNA repair"],
   },
   "magnesium-l-threonate": {
     id: "magnesium-l-threonate",
@@ -44,6 +50,8 @@ export const PRODUCTS: Record<string, Product> = {
     category: "Active Supplement",
     rating: 4.8,
     reviewCount: 84,
+    ingredients: ["Magnesium L-Threonate 144mg", "Magnesium Glycinate 200mg", "Apigenin 50mg"],
+    benefits: ["Promotes deep, restorative sleep", "Supports neuroplasticity", "Reduces stress and muscle tension"],
   },
   "dna-methylation-kit": {
     id: "dna-methylation-kit",
@@ -55,5 +63,7 @@ export const PRODUCTS: Record<string, Product> = {
     category: "Diagnostic Assay",
     rating: 5.0,
     reviewCount: 312,
+    ingredients: ["Saliva collection tube", "Pre-paid return shipping label", "Secure laboratory analysis processing"],
+    benefits: ["Measures your exact biological age", "Identifies specific longevity risk markers", "Personalizes your VitalityX protocol"],
   },
 };

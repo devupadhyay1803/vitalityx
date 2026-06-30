@@ -22,14 +22,14 @@ export default function MessagesPage() {
     if (!user) return;
     setMe(user.id);
 
-    // Fetch assigned coach
-    const { data: cr } = await supabase
-      .from("client_records")
-      .select("assigned_coach_id")
-      .eq("member_id", user.id)
-      .single();
-    const coachId = cr?.assigned_coach_id || null;
-    setAssignedCoachId(coachId);
+    // Fetch care team assignments to find partners
+    const { data: assignments } = await supabase
+      .from("care_team_assignments")
+      .select("staff_id, member_id")
+      .or(`member_id.eq.${user.id},staff_id.eq.${user.id}`);
+    
+    // We keep assignedCoachId for backwards compatibility but we'll use partnerIds primarily
+    setAssignedCoachId(assignments?.[0]?.staff_id || null);
 
     // Fetch all messages involving user
     const { data: allMsgs } = await supabase
@@ -43,7 +43,12 @@ export default function MessagesPage() {
 
     // Find all partner IDs
     const partnerIds = new Set<string>();
-    if (coachId) partnerIds.add(coachId);
+    if (assignments) {
+      assignments.forEach((a) => {
+        if (a.staff_id !== user.id) partnerIds.add(a.staff_id);
+        if (a.member_id !== user.id) partnerIds.add(a.member_id);
+      });
+    }
     msgs.forEach((m) => {
       if (m.sender_id !== user.id) partnerIds.add(m.sender_id);
       if (m.receiver_id !== user.id) partnerIds.add(m.receiver_id);
@@ -65,8 +70,9 @@ export default function MessagesPage() {
           const updated = loadedPartners.find((p) => p.id === current.id);
           return updated || current;
         }
-        if (coachId) {
-          return loadedPartners.find((p) => p.id === coachId) || loadedPartners[0] || null;
+        if (assignments && assignments.length > 0) {
+          const firstPartnerId = assignments[0].staff_id === user.id ? assignments[0].member_id : assignments[0].staff_id;
+          return loadedPartners.find((p) => p.id === firstPartnerId) || loadedPartners[0] || null;
         }
         return loadedPartners[0] || null;
       });

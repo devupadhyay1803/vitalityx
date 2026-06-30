@@ -2,6 +2,7 @@
 import useSWR from "swr";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/components/portal/user-provider";
 
 const supabase = createClient();
 const tabs = ["Biomarkers", "Genetics", "Bio Age"] as const;
@@ -11,14 +12,45 @@ export default function MyDataPage() {
   const [tab, setTab] = useState<Tab>("Biomarkers");
   const [uploading, setUploading] = useState(false);
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     setUploading(true);
-    // Mock upload delay
-    setTimeout(() => {
-      setUploading(false);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Unauthorized");
+      
+      const ext = file.name.split('.').pop();
+      const storagePath = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+      
+      const { error: storageError } = await supabase.storage
+        .from("documents")
+        .upload(storagePath, file);
+        
+      if (storageError) throw storageError;
+      
+      const { error: dbError } = await supabase.from("documents").insert({
+        member_id: user.id,
+        uploaded_by: user.id,
+        category: "Lab Report",
+        title: file.name.split('.')[0].replace(/[-_]/g, ' '),
+        description: "Uploaded from My Data page",
+        file_name: file.name,
+        storage_path: storagePath,
+        mime_type: file.type || "application/octet-stream",
+        file_size: file.size
+      });
+      
+      if (dbError) throw dbError;
+      
       alert("Labs uploaded successfully. Our clinical team will review them within 48 hours.");
-    }, 2000);
+      // Typically we'd use mutate("member-documents") here to refresh the UI
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -51,9 +83,8 @@ export default function MyDataPage() {
 }
 
 function BiomarkersTable() {
-  const { data } = useSWR("biomarkers", async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+  const { user } = useUser();
+  const { data } = useSWR(["biomarkers", user.id], async () => {
     const { data } = await supabase.from("biomarkers").select("*").eq("member_id", user.id).order("tested_at", { ascending: false });
     return data || [];
   });
@@ -81,9 +112,8 @@ function BiomarkersTable() {
   );
 }
 function GeneticsList() {
-  const { data } = useSWR("genetics", async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+  const { user } = useUser();
+  const { data } = useSWR(["genetics", user.id], async () => {
     const { data } = await supabase.from("genetic_traits").select("*").eq("member_id", user.id);
     return data || [];
   });
@@ -102,10 +132,9 @@ function GeneticsList() {
   );
 }
 function BioAgeTrend() {
-  const { data } = useSWR("bioage", async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
-    const { data } = await supabase.from("lab_results").select("*").eq("member_id", user.id).order("tested_at");
+  const { user } = useUser();
+  const { data } = useSWR(["bioage", user.id], async () => {
+    const { data } = await supabase.from("biological_age_records").select("*").eq("member_id", user.id).order("recorded_at", { ascending: true });
     return data || [];
   });
   if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
@@ -115,7 +144,7 @@ function BioAgeTrend() {
     <div className="vx-card p-6" data-testid="bio-age-card">
       <p className="text-xs uppercase tracking-widest text-muted-foreground">Latest biological age</p>
       <p className="mt-2 font-display text-5xl">{latest.biological_age} yrs</p>
-      <p className="mt-1 text-sm text-muted-foreground">Tested {latest.tested_at}</p>
+      <p className="mt-1 text-sm text-muted-foreground">Recorded {new Date(latest.recorded_at).toLocaleDateString()}</p>
     </div>
   );
 }

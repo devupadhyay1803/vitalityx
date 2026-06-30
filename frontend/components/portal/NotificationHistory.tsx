@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow, format } from "date-fns";
 import { Bell, AlertCircle, Calendar, MessageSquare, CheckCircle2, FlaskConical, FileText, UserPlus, FileSignature, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/components/portal/user-provider";
 
 type Notification = {
   id: string;
@@ -20,15 +21,15 @@ type Notification = {
 };
 
 export function NotificationHistory() {
-  const supabase = createClient();
   const router = useRouter();
+  const { user } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
-  const fetchNotifications = React.useCallback(async () => {
+  const fetchNotifications = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const supabase = createClient();
     if (!user) return;
 
     let query = supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
@@ -42,7 +43,7 @@ export function NotificationHistory() {
       setNotifications(data as Notification[]);
     }
     setLoading(false);
-  }, [filter, supabase]);
+  }, [filter]);
 
   useEffect(() => {
     Promise.resolve().then(() => {

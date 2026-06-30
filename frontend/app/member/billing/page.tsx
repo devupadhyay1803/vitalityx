@@ -17,17 +17,14 @@ export default function BillingPage() {
   });
 
   const { data: orders } = useSWR(user ? `orders-${user.id}` : null, async () => {
-    const { data } = await supabase.from("orders").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("orders").select("*").eq("member_id", user!.id).order("created_at", { ascending: false });
     return data || [];
   });
 
-  const mockSubscription = {
-    plan: "Complete Longevity Tier",
-    price: "$450 / month",
-    status: "Active",
-    next_billing: "Aug 1, 2026",
-    card_last4: "4242"
-  };
+  const { data: subscriptions } = useSWR(user ? `subscriptions-${user.id}` : null, async () => {
+    const { data } = await supabase.from("supplement_subscriptions").select("*").eq("member_id", user!.id).eq("status", "active");
+    return data || [];
+  });
 
   const handleManageSub = () => {
     toast.info("Customer portal opening...");
@@ -62,31 +59,33 @@ export default function BillingPage() {
       <div className="max-w-3xl">
         {tab === "subscriptions" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="vx-card p-6 border-l-4 border-[var(--vx-jade)] relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 text-[var(--vx-jade)]/10">
-                <ActivityIcon />
-              </div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="badge badge-jade mb-2 text-xs">Active</span>
-                  <h2 className="font-display text-2xl font-medium">{mockSubscription.plan}</h2>
-                  <p className="mt-2 text-lg">{mockSubscription.price}</p>
+            {subscriptions?.length ? subscriptions.map((sub: any) => (
+              <div key={sub.id} className="vx-card p-6 border-l-4 border-[var(--vx-jade)] relative overflow-hidden mb-4">
+                <div className="absolute -right-10 -top-10 text-[var(--vx-jade)]/10">
+                  <ActivityIcon />
                 </div>
-                <button onClick={handleManageSub} className="btn btn-outline flex items-center gap-2 text-sm">
-                  <SettingsIcon /> Manage
-                </button>
-              </div>
-              <div className="mt-8 grid grid-cols-2 gap-4 border-t border-border pt-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Next Billing Date</p>
-                  <p className="font-medium">{mockSubscription.next_billing}</p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="badge badge-jade mb-2 text-xs">Active</span>
+                    <h2 className="font-display text-2xl font-medium">{sub.product_name}</h2>
+                    <p className="mt-2 text-lg">$450 / month</p>
+                  </div>
+                  <button onClick={handleManageSub} className="btn btn-outline flex items-center gap-2 text-sm">
+                    <SettingsIcon /> Manage
+                  </button>
                 </div>
-                <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Payment Method</p>
-                  <p className="font-medium flex items-center gap-2"><CreditCard size={14} /> •••• {mockSubscription.card_last4}</p>
+                <div className="mt-8 grid grid-cols-2 gap-4 border-t border-border pt-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Started On</p>
+                    <p className="font-medium">{new Date(sub.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Payment Method</p>
+                    <p className="font-medium flex items-center gap-2"><CreditCard size={14} /> •••• 4242</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )) : <p>No active subscriptions found.</p>}
           </div>
         )}
 
@@ -155,19 +154,19 @@ export default function BillingPage() {
 
         {tab === "invoices" && (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="vx-card p-4 flex justify-between items-center group">
+            {orders?.map((order: any) => (
+              <div key={order.id} className="vx-card p-4 flex justify-between items-center group">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
                     <Receipt size={18} />
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Invoice INV-2026-0{i}</p>
-                    <p className="text-xs text-muted-foreground">Complete Longevity Tier · ${(450).toFixed(2)}</p>
+                    <p className="font-medium text-sm">Invoice INV-{order.id.substring(0,6).toUpperCase()}</p>
+                    <p className="text-xs text-muted-foreground">{order.items?.[0]?.name || 'Supplement Order'} · ${(order.amount_total/100).toFixed(2)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6">
-                  <p className="text-sm text-muted-foreground">{`Jun ${i + 10}, 2026`}</p>
+                  <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
                   <button className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition">
                     <ExternalLink size={16} />
                   </button>

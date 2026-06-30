@@ -40,6 +40,8 @@ const STAFF_NAV: Nav[] = [
   { href: "/staff/settings",   label: "Settings", icon: Settings,     testId: "sidebar-staff-settings" },
 ];
 
+import { UserProvider } from "@/components/portal/user-provider";
+
 export function PortalShell({ variant, user, profile, children }: {
   variant: "member" | "staff";
   user: { id: string; email: string };
@@ -62,8 +64,9 @@ export function PortalShell({ variant, user, profile, children }: {
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--vx-cream)]/40">
-      <aside data-testid="portal-sidebar" className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
+    <UserProvider user={user} profile={profile}>
+      <div className="flex min-h-screen bg-[var(--vx-cream)]/40">
+        <aside data-testid="portal-sidebar" className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
         <Link href="/" className="flex items-center gap-2 px-6 py-5 font-display text-xl font-semibold">
           <span className="inline-block h-5 w-5 rounded-full bg-[var(--vx-jade)]" /> VitalityX
         </Link>
@@ -133,7 +136,8 @@ export function PortalShell({ variant, user, profile, children }: {
       </nav>
 
       <main className="flex-1 pb-24 md:pb-0">{children}</main>
-    </div>
+      </div>
+    </UserProvider>
   );
 }
 

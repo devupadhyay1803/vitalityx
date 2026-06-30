@@ -11,9 +11,9 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: consentRecord } = await supabase
-      .from("consent_records")
+      .from("client_records")
       .select("consent_version")
-      .eq("user_id", user.id)
+      .eq("member_id", user.id)
       .eq("consent_version", CONSENT_VERSION)
       .single();
       
