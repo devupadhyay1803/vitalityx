@@ -12,14 +12,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * Call: GET /api/admin/bootstrap?token=BOOTSTRAP_TOKEN
  */
 
-const BOOTSTRAP_TOKEN = process.env.BOOTSTRAP_TOKEN || "vx-bootstrap-2026";
+const BOOTSTRAP_TOKEN = process.env.BOOTSTRAP_TOKEN;
 
 const DEMO_MEMBER_EMAIL = process.env.DEMO_MEMBER_EMAIL || "dev.upadhyay@vitalityx.com";
 const DEMO_COACH_EMAIL = process.env.DEMO_COACH_EMAIL || "dr.vance@vitalityx.com";
-const DEMO_MEMBER_PASSWORD = process.env.DEMO_MEMBER_PASSWORD || "VitalityDemo2026!";
-const DEMO_COACH_PASSWORD = process.env.DEMO_COACH_PASSWORD || "CoachDemo2026!";
+const DEMO_MEMBER_PASSWORD = process.env.DEMO_MEMBER_PASSWORD;
+const DEMO_COACH_PASSWORD = process.env.DEMO_COACH_PASSWORD;
 
 export async function GET(req: NextRequest) {
+  if (!BOOTSTRAP_TOKEN || !DEMO_MEMBER_PASSWORD || !DEMO_COACH_PASSWORD) {
+    return NextResponse.json({ error: "Server misconfiguration: missing demo credentials" }, { status: 500 });
+  }
+
   const token = req.nextUrl.searchParams.get("token");
   if (token !== BOOTSTRAP_TOKEN) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
