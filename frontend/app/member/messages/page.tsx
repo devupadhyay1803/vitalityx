@@ -18,64 +18,68 @@ export default function MessagesPage() {
   const endRef = useRef<HTMLDivElement>(null);
 
   async function loadAll() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setMe(user.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setMe(user.id);
 
-    // Fetch care team assignments to find partners
-    const { data: assignments } = await supabase
-      .from("care_team_assignments")
-      .select("staff_id, member_id")
-      .or(`member_id.eq.${user.id},staff_id.eq.${user.id}`);
-    
-    // We keep assignedCoachId for backwards compatibility but we'll use partnerIds primarily
-    setAssignedCoachId(assignments?.[0]?.staff_id || null);
-
-    // Fetch all messages involving user
-    const { data: allMsgs } = await supabase
-      .from("messages")
-      .select("*")
-      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-      .order("created_at");
-    
-    const msgs = allMsgs || [];
-    setMessages(msgs);
-
-    // Find all partner IDs
-    const partnerIds = new Set<string>();
-    if (assignments) {
-      assignments.forEach((a) => {
-        if (a.staff_id !== user.id) partnerIds.add(a.staff_id);
-        if (a.member_id !== user.id) partnerIds.add(a.member_id);
-      });
-    }
-    msgs.forEach((m) => {
-      if (m.sender_id !== user.id) partnerIds.add(m.sender_id);
-      if (m.receiver_id !== user.id) partnerIds.add(m.receiver_id);
-    });
-
-    if (partnerIds.size > 0) {
-      // Fetch profiles of all these partners
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, role, email")
-        .in("id", Array.from(partnerIds));
+      // Fetch care team assignments to find partners
+      const { data: assignments } = await supabase
+        .from("care_team_assignments")
+        .select("staff_id, member_id")
+        .or(`member_id.eq.${user.id},staff_id.eq.${user.id}`);
       
-      const loadedPartners = profiles || [];
-      setPartners(loadedPartners);
+      // We keep assignedCoachId for backwards compatibility but we'll use partnerIds primarily
+      setAssignedCoachId(assignments?.[0]?.staff_id || null);
 
-      // Default to opening assigned coach thread on load (or first, preserving current selection)
-      setSelectedPartner((current: any) => {
-        if (current) {
-          const updated = loadedPartners.find((p) => p.id === current.id);
-          return updated || current;
-        }
-        if (assignments && assignments.length > 0) {
-          const firstPartnerId = assignments[0].staff_id === user.id ? assignments[0].member_id : assignments[0].staff_id;
-          return loadedPartners.find((p) => p.id === firstPartnerId) || loadedPartners[0] || null;
-        }
-        return loadedPartners[0] || null;
+      // Fetch all messages involving user
+      const { data: allMsgs } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .order("created_at");
+      
+      const msgs = allMsgs || [];
+      setMessages(msgs);
+
+      // Find all partner IDs
+      const partnerIds = new Set<string>();
+      if (assignments) {
+        assignments.forEach((a) => {
+          if (a.staff_id !== user.id) partnerIds.add(a.staff_id);
+          if (a.member_id !== user.id) partnerIds.add(a.member_id);
+        });
+      }
+      msgs.forEach((m) => {
+        if (m.sender_id !== user.id) partnerIds.add(m.sender_id);
+        if (m.receiver_id !== user.id) partnerIds.add(m.receiver_id);
       });
+
+      if (partnerIds.size > 0) {
+        // Fetch profiles of all these partners
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, role, email")
+          .in("id", Array.from(partnerIds));
+        
+        const loadedPartners = profiles || [];
+        setPartners(loadedPartners);
+
+        // Default to opening assigned coach thread on load (or first, preserving current selection)
+        setSelectedPartner((current: any) => {
+          if (current) {
+            const updated = loadedPartners.find((p) => p.id === current.id);
+            return updated || current;
+          }
+          if (assignments && assignments.length > 0) {
+            const firstPartnerId = assignments[0].staff_id === user.id ? assignments[0].member_id : assignments[0].staff_id;
+            return loadedPartners.find((p) => p.id === firstPartnerId) || loadedPartners[0] || null;
+          }
+          return loadedPartners[0] || null;
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to load message conversations:", e);
     }
   }
 

@@ -15,20 +15,25 @@ export default function MemberDocumentsPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const { data: documents, isLoading } = useSWR("member-documents", async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
-    
-    const { data, error } = await supabase
-      .from("documents")
-      .select("*")
-      .eq("member_id", user.id)
-      .order("created_at", { ascending: false });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
       
-    if (error) {
-      console.error(error);
+      const { data, error } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("member_id", user.id)
+        .order("created_at", { ascending: false });
+        
+      if (error) {
+        console.warn("Error loading member documents:", error);
+        return [];
+      }
+      return data;
+    } catch (e) {
+      console.warn("Failed to fetch member documents:", e);
       return [];
     }
-    return data;
   });
 
   const filteredDocs = (documents || []).filter((doc: DocumentType) => {

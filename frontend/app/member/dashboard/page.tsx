@@ -15,37 +15,42 @@ import { toast } from "sonner";
 const supabase = createClient();
 
 async function fetchDashboard() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("no user");
-  const { data, error } = await supabase.rpc("get_member_dashboard", { p_member_id: user.id });
-  if (error) {
-    console.error(error);
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { user: null, data: null, team: [], bioHistory: [] };
+    const { data, error } = await supabase.rpc("get_member_dashboard", { p_member_id: user.id });
+    if (error) {
+      console.warn("get_member_dashboard RPC error:", error);
+    }
+
+    // Fetch Care Team for preview
+    const { data: teamAssignments } = await supabase
+      .from("care_team_assignments")
+      .select(`
+        id, role,
+        staff:profiles!care_team_assignments_staff_id_fkey(
+          id, full_name,
+          staff_profiles(profile_photo, credentials)
+        )
+      `)
+      .eq("member_id", user.id)
+      .limit(3);
+
+    // Fetch Biological Age Engine Records
+    const { data: bioRecords } = await supabase
+      .from("biological_age_records")
+      .select("*")
+      .eq("member_id", user.id)
+      .order("calculated_at", { ascending: true });
+
+    const team = teamAssignments || [];
+    const bioHistory = bioRecords || [];
+
+    return { user, data, team, bioHistory };
+  } catch (err) {
+    console.warn("fetchDashboard error caught:", err);
+    return { user: null, data: null, team: [], bioHistory: [] };
   }
-
-  // Fetch Care Team for preview
-  const { data: teamAssignments } = await supabase
-    .from("care_team_assignments")
-    .select(`
-      id, role,
-      staff:profiles!care_team_assignments_staff_id_fkey(
-        id, full_name,
-        staff_profiles(profile_photo, credentials)
-      )
-    `)
-    .eq("member_id", user.id)
-    .limit(3);
-
-  // Fetch Biological Age Engine Records
-  const { data: bioRecords } = await supabase
-    .from("biological_age_records")
-    .select("*")
-    .eq("member_id", user.id)
-    .order("calculated_at", { ascending: true });
-
-  const team = teamAssignments || [];
-  const bioHistory = bioRecords || [];
-
-  return { user, data, team, bioHistory };
 }
 
 export default function MemberDashboard() {
@@ -55,6 +60,7 @@ export default function MemberDashboard() {
 
   if (isLoading) return <DashboardSkeleton />;
   if (error) return <div className="p-8 text-destructive" data-testid="dashboard-error">Failed to load dashboard: {String(error)}</div>;
+  if (!data || !data.user) return null;
 
   interface DashboardData {
     profile?: { full_name: string };

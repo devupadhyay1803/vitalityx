@@ -10,15 +10,20 @@ const supabase = createClient();
 export default function ProtocolPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const { data, mutate } = useSWR("protocol-full", async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const [{ data: items }, { data: comps }] = await Promise.all([
-      supabase.from("protocol_items").select("*").eq("member_id", user.id).eq("active", true).order("created_at"),
-      supabase.from("protocol_completions").select("item_id, completed_at").eq("member_id", user.id).gte("completed_at", new Date(new Date().toDateString()).toISOString()),
-    ]);
-    return { userId: user.id, items: items || [], doneToday: new Set((comps || []).map((c: any) => c.item_id)) };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { userId: "", items: [], doneToday: new Set<string>() };
+      const [{ data: items }, { data: comps }] = await Promise.all([
+        supabase.from("protocol_items").select("*").eq("member_id", user.id).eq("active", true).order("created_at"),
+        supabase.from("protocol_completions").select("item_id, completed_at").eq("member_id", user.id).gte("completed_at", new Date(new Date().toDateString()).toISOString()),
+      ]);
+      return { userId: user.id, items: items || [], doneToday: new Set<string>((comps || []).map((c: any) => c.item_id)) };
+    } catch (e) {
+      console.warn("Failed to fetch protocol data:", e);
+      return { userId: "", items: [], doneToday: new Set<string>() };
+    }
   });
-  if (!data) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
+  if (!data || !data.userId) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
 
   async function toggle(id: string) {
     if (!data) return;
