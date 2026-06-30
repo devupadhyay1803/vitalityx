@@ -5,6 +5,7 @@ import { Bell, AlertCircle, Calendar, MessageSquare, CheckCircle2, FlaskConical,
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { useUser } from "@/components/portal/user-provider";
 
 type Notification = {
   id: string;
@@ -24,6 +25,7 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const supabase = createClient();
   const router = useRouter();
+  const { user } = useUser();
 
   // Close popover when clicking outside
   useEffect(() => {
@@ -38,10 +40,8 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
 
   // Fetch initial notifications
   useEffect(() => {
+    if (!user) return;
     const fetchNotifications = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { data, error } = await supabase
         .from("notifications")
         .select("*")
@@ -54,17 +54,14 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
       }
     };
     fetchNotifications();
-  }, [supabase]);
+  }, [supabase, user]);
 
   // Subscribe to Realtime updates
   useEffect(() => {
+    if (!user) return;
     let channel: ReturnType<typeof supabase.channel> | undefined;
-    let isMounted = true;
 
-    const setupRealtime = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !isMounted) return;
-
+    const setupRealtime = () => {
       // Append random string to channel name to prevent StrictMode cache collisions
       channel = supabase.channel(`notifications_${user.id}_${Math.random().toString(36).substring(7)}`)
         .on(
@@ -86,10 +83,9 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
     setupRealtime();
 
     return () => {
-      isMounted = false;
       if (channel) supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, user]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 

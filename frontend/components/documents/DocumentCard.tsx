@@ -145,15 +145,15 @@ export function DocumentCard({ document, isStaff, onDelete, onReplace }: Documen
             <Download size={14} /> Download
           </button>
           
-          {isStaff && (
-            <>
-              <button onClick={onReplace} disabled={isLoading} className="btn btn-outline px-3 py-1.5 text-xs flex items-center justify-center" title="Replace File">
-                <RefreshCw size={14} />
-              </button>
-              <button onClick={handleDelete} disabled={isLoading} className="btn btn-outline text-destructive hover:bg-destructive/10 px-3 py-1.5 text-xs flex items-center justify-center" title="Delete">
-                <Trash2 size={14} />
-              </button>
-            </>
+          {onReplace && (
+            <button onClick={onReplace} disabled={isLoading} className="btn btn-outline px-3 py-1.5 text-xs flex items-center justify-center" title="Replace File">
+              <RefreshCw size={14} />
+            </button>
+          )}
+          {onDelete && (
+            <button onClick={handleDelete} disabled={isLoading} className="btn btn-outline text-destructive hover:bg-destructive/10 px-3 py-1.5 text-xs flex items-center justify-center" title="Delete">
+              <Trash2 size={14} />
+            </button>
           )}
         </div>
       </div>

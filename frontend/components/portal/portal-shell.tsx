@@ -145,7 +145,10 @@ function useIdleTimeout(ms: number) {
   const ref = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   useEffect(() => {
-    const reset = () => {
+    let lastReset = Date.now();
+    const reset = (force = false) => {
+      if (!force && Date.now() - lastReset < 10000) return;
+      lastReset = Date.now();
       if (ref.current) clearTimeout(ref.current);
       ref.current = setTimeout(async () => {
         await logClientAudit("Logout", { metadata: { reason: "idle_timeout" } });
@@ -155,10 +158,11 @@ function useIdleTimeout(ms: number) {
       }, ms);
     };
     const events = ["mousemove", "keydown", "click", "scroll", "touchstart"] as const;
-    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
-    reset();
+    const handleEvent = () => reset(false);
+    events.forEach((e) => window.addEventListener(e, handleEvent, { passive: true }));
+    reset(true);
     return () => {
-      events.forEach((e) => window.removeEventListener(e, reset));
+      events.forEach((e) => window.removeEventListener(e, handleEvent));
       if (ref.current) clearTimeout(ref.current);
     };
   }, [ms, router]);

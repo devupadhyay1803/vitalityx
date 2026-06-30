@@ -72,12 +72,31 @@ async function seed() {
     const daysAgo = (days) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     const hoursAgo = (hours) => new Date(now.getTime() - hours * 60 * 60 * 1000);
 
+    console.log("🧹 Cleaning up old demo data for Member to prevent duplicate key violations...");
+    await supabase.from('care_team_assignments').delete().eq('member_id', member.id);
+    await supabase.from('client_records').delete().eq('member_id', member.id);
+    await supabase.from('consent_records').delete().eq('user_id', member.id);
+    await supabase.from('daily_checkins').delete().eq('member_id', member.id);
+    await supabase.from('biological_age_records').delete().eq('member_id', member.id);
+    await supabase.from('biomarkers').delete().eq('member_id', member.id);
+    await supabase.from('genetic_traits').delete().eq('member_id', member.id);
+    await supabase.from('documents').delete().eq('member_id', member.id);
+    await supabase.from('appointments').delete().eq('member_id', member.id);
+    await supabase.from('supplement_subscriptions').delete().eq('member_id', member.id);
+    await supabase.from('orders').delete().eq('member_id', member.id);
+    await supabase.from('notifications').delete().eq('user_id', member.id);
+    await supabase.from('protocol_items').delete().eq('member_id', member.id);
+    await supabase.from('protocol_completions').delete().eq('member_id', member.id);
+    await supabase.from('messages').delete().or(`sender_id.eq.${member.id},receiver_id.eq.${member.id}`);
+    await supabase.from('audit_logs').delete().or(`actor_id.eq.${member.id},target_user_id.eq.${member.id}`);
+
     // --- Care Team & Client Records ---
-    await supabase.from('care_team_assignments').upsert([
-      { id: uuid(`ct-coach-${member.id}`), member_id: member.id, staff_id: coach.id, role: 'Health Coach', is_primary: true, assigned_at: daysAgo(90).toISOString() },
-      { id: uuid(`ct-phys-${member.id}`), member_id: member.id, staff_id: physician.id, role: 'Physician', is_primary: false, assigned_at: daysAgo(90).toISOString() },
-      { id: uuid(`ct-nutr-${member.id}`), member_id: member.id, staff_id: nutritionist.id, role: 'Nutritionist', is_primary: false, assigned_at: daysAgo(85).toISOString() }
+    const { error: ctError } = await supabase.from('care_team_assignments').upsert([
+      { id: uuid(`ct-coach-${member.id}`), member_id: member.id, staff_id: coach.id, role: 'Health Coach', is_primary: true, created_at: daysAgo(90).toISOString() },
+      { id: uuid(`ct-phys-${member.id}`), member_id: member.id, staff_id: physician.id, role: 'Physician', is_primary: false, created_at: daysAgo(90).toISOString() },
+      { id: uuid(`ct-nutr-${member.id}`), member_id: member.id, staff_id: nutritionist.id, role: 'Nutritionist', is_primary: false, created_at: daysAgo(85).toISOString() }
     ]);
+    if (ctError) throw ctError;
     
     await supabase.from('client_records').upsert({
       member_id: member.id,
@@ -110,7 +129,8 @@ async function seed() {
       mood_score: 6 + Math.floor(Math.random() * 4),
       checked_in_at: daysAgo(i + 1).toISOString()
     }));
-    await supabase.from('daily_checkins').upsert(checkins);
+    const { error: ciError } = await supabase.from('daily_checkins').upsert(checkins);
+    if (ciError) throw ciError;
     console.log("✅ Seeded 8 Check-ins");
 
     // --- Biological Age (5 entries) ---
@@ -125,11 +145,12 @@ async function seed() {
       member_id: member.id,
       chronological_age: b.chron,
       biological_age: b.bio,
-      blood_age: b.bio + 0.5,
-      dna_age: b.bio - 0.5,
-      recorded_at: daysAgo(b.d).toISOString()
+      calculation_version: '1.0',
+      calculated_at: daysAgo(b.d).toISOString(),
+      created_at: daysAgo(b.d).toISOString()
     }));
-    await supabase.from('biological_age_records').upsert(bioAges);
+    const { error: baError } = await supabase.from('biological_age_records').upsert(bioAges);
+    if (baError) throw baError;
     console.log("✅ Seeded 5 Biological Age Entries");
 
     // --- Biomarkers & Genetics ---
@@ -153,24 +174,27 @@ async function seed() {
 
     // --- Documents (6 entries) ---
     const docs = [
-      { t: 'Blood Panel - Comprehensive', cat: 'Lab Result', d: 85, u: physician.id },
-      { t: 'CBC and Metabolic Panel', cat: 'Lab Result', d: 80, u: physician.id },
-      { t: 'Vitamin D Screen', cat: 'Lab Result', d: 75, u: physician.id },
-      { t: 'Genetic Analysis Report', cat: 'Intake', d: 90, u: member.id },
-      { t: 'Dexa Scan Body Comp', cat: 'Imaging', d: 40, u: member.id },
+      { t: 'Blood Panel - Comprehensive', cat: 'Lab Report', d: 85, u: physician.id },
+      { t: 'CBC and Metabolic Panel', cat: 'Lab Report', d: 80, u: physician.id },
+      { t: 'Vitamin D Screen', cat: 'Lab Report', d: 75, u: physician.id },
+      { t: 'Genetic Analysis Report', cat: 'Genetics Report', d: 90, u: member.id },
+      { t: 'Dexa Scan Body Comp', cat: 'Other', d: 40, u: member.id },
       { t: 'Longevity Treatment Plan', cat: 'Protocol', d: 20, u: coach.id }
     ].map((d, i) => ({
       id: uuid(`doc-${i}-${member.id}`),
       member_id: member.id,
       title: d.t,
-      file_path: 'demo/placeholder.pdf',
-      file_type: 'pdf',
-      size_bytes: 102400 + Math.floor(Math.random() * 900000),
+      file_name: d.t.toLowerCase().replace(/ /g, '_') + '.pdf',
+      storage_path: `${member.id}/demo_doc_${i}.pdf`,
+      mime_type: 'application/pdf',
+      file_size: 102400 + Math.floor(Math.random() * 900000),
       category: d.cat,
       uploaded_by: d.u,
-      uploaded_at: daysAgo(d.d).toISOString()
+      created_at: daysAgo(d.d).toISOString(),
+      updated_at: daysAgo(d.d).toISOString()
     }));
-    await supabase.from('documents').upsert(docs);
+    const { error: docError } = await supabase.from('documents').upsert(docs);
+    if (docError) throw docError;
     console.log("✅ Seeded 6 Documents");
 
     // --- Appointments (6 entries) ---
@@ -334,9 +358,10 @@ async function seed() {
       actor_role: l.r,
       action: l.a,
       target_user_id: member.id,
-      timestamp: daysAgo(Math.floor(Math.random() * 30)).toISOString()
+      created_at: daysAgo(Math.floor(Math.random() * 30)).toISOString()
     }));
-    await supabase.from('audit_logs').upsert(logs);
+    const { error: alError } = await supabase.from('audit_logs').upsert(logs);
+    if (alError) throw alError;
     console.log("✅ Seeded Audit Logs");
 
     console.log("🎉 Demo Seeding Complete!");

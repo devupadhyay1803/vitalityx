@@ -4,25 +4,30 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { DocumentCard, type DocumentType } from "@/components/documents/DocumentCard";
-import { Search, LayoutGrid, List } from "lucide-react";
+import { DocumentUpload } from "@/components/documents/DocumentUpload";
+import { useUser } from "@/components/portal/user-provider";
+import { Search, LayoutGrid, List, Plus } from "lucide-react";
 
 const CATEGORIES = ["All", "Lab Report", "Genetics Report", "Protocol", "Invoice", "Membership", "Consent", "Medical Form", "Other"];
 
 export default function MemberDocumentsPage() {
   const supabase = createClient();
+  const { user } = useUser();
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [showUpload, setShowUpload] = useState(false);
+  const [replaceDoc, setReplaceDoc] = useState<{ id: string; path: string } | null>(null);
 
-  const { data: documents, isLoading } = useSWR("member-documents", async () => {
+  const { data: documents, isLoading, mutate } = useSWR("member-documents", async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) return [];
       
       const { data, error } = await supabase
         .from("documents")
         .select("*")
-        .eq("member_id", user.id)
+        .eq("member_id", currentUser.id)
         .order("created_at", { ascending: false });
         
       if (error) {
@@ -53,6 +58,15 @@ export default function MemberDocumentsPage() {
         </div>
         
         <div className="flex items-center gap-2">
+          {!showUpload && !replaceDoc && (
+            <button 
+              onClick={() => setShowUpload(true)} 
+              className="btn btn-primary flex items-center gap-2 mr-2"
+            >
+              <Plus size={16} /> Upload Document
+            </button>
+          )}
+          
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
             <input 
@@ -73,6 +87,23 @@ export default function MemberDocumentsPage() {
           </div>
         </div>
       </div>
+
+      {(showUpload || replaceDoc) && (
+        <div className="mb-10 relative">
+          <button 
+            onClick={() => { setShowUpload(false); setReplaceDoc(null); }} 
+            className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-card border border-border rounded-full hover:bg-muted z-10"
+          >
+            ✕
+          </button>
+          <DocumentUpload 
+            memberId={user?.id || ""} 
+            onUploadSuccess={() => { setShowUpload(false); setReplaceDoc(null); mutate(); }} 
+            replaceDocId={replaceDoc?.id}
+            replaceDocPath={replaceDoc?.path}
+          />
+        </div>
+      )}
 
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
         {CATEGORIES.map(cat => (
@@ -97,7 +128,12 @@ export default function MemberDocumentsPage() {
       ) : (
         <div className={viewMode === "list" ? "flex flex-col gap-4" : "grid sm:grid-cols-2 lg:grid-cols-3 gap-4"}>
           {filteredDocs.map((doc: DocumentType) => (
-            <DocumentCard key={doc.id} document={doc} />
+            <DocumentCard 
+              key={doc.id} 
+              document={doc} 
+              onDelete={() => mutate()}
+              onReplace={() => { setReplaceDoc({ id: doc.id, path: doc.storage_path }); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            />
           ))}
         </div>
       )}
