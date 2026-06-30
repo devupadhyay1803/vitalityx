@@ -7,6 +7,8 @@ export default async function StaffDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
+  if (!user) return null; // Let layout.tsx handle the redirect
+  
   const now = new Date();
   const todayDate = new Date(now.toDateString());
   const tomorrowDate = new Date(todayDate.getTime() + 86400000);

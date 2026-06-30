@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 
 const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -10,12 +10,9 @@ export default function SessionTimeout() {
   const router = useRouter();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const supabase = React.useMemo(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), []);
+  const supabase = createClient();
 
-  const resetTimer = React.useCallback(() => {
+  const resetTimer = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme-provider";
 import { getInitials } from "@/lib/utils";
 import { logClientAudit } from "@/lib/audit-client";
 import { useEffect, useState, useRef } from "react";

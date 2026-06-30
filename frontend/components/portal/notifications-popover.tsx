@@ -59,11 +59,14 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
   // Subscribe to Realtime updates
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | undefined;
+    let isMounted = true;
+
     const setupRealtime = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !isMounted) return;
 
-      channel = supabase.channel(`notifications_${user.id}`)
+      // Append random string to channel name to prevent StrictMode cache collisions
+      channel = supabase.channel(`notifications_${user.id}_${Math.random().toString(36).substring(7)}`)
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
@@ -83,6 +86,7 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
     setupRealtime();
 
     return () => {
+      isMounted = false;
       if (channel) supabase.removeChannel(channel);
     };
   }, [supabase]);
