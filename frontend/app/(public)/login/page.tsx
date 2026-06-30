@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -15,8 +15,8 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Show contextual feedback if redirected here from auth callback or idle timeout
-  useState(() => {
+  useEffect(() => {
+    // 1. Show contextual feedback
     const error = params.get("error");
     const idle = params.get("idle");
     if (error === "auth_callback_failed") {
@@ -25,7 +25,19 @@ function LoginForm() {
     if (idle === "1") {
       toast.info("You were signed out due to inactivity.");
     }
-  });
+
+    // 2. Redirect if already logged in
+    const checkSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
+        const dest = redirectTo || (profile?.role === "Member" ? "/member/dashboard" : "/staff/dashboard");
+        router.push(dest);
+      }
+    };
+    checkSession();
+  }, [params, redirectTo, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
