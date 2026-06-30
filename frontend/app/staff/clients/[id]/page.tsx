@@ -3,6 +3,70 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ClientTabs } from "@/components/staff/client-tabs";
+import { ClipboardList } from "lucide-react";
+
+function formatIntake(intake: any, consentedAt?: string) {
+  if (!intake || Object.keys(intake).length === 0) return null;
+
+  const fields: { label: string; value: string }[] = [];
+
+  // 1. Goal / Primary Objective
+  const goalVal = intake.goals || intake.goal || intake.health_goal;
+  if (goalVal) {
+    fields.push({ label: "Goal / Primary Objective", value: String(goalVal) });
+  }
+
+  // 2. Medical Conditions
+  if (intake.conditions && Array.isArray(intake.conditions)) {
+    const condList = intake.conditions.filter((c: string) => c !== "None");
+    if (condList.length > 0) {
+      fields.push({ label: "Medical Conditions", value: condList.join(", ") });
+    } else if (intake.conditions.includes("None")) {
+      fields.push({ label: "Medical Conditions", value: "None" });
+    }
+  } else if (intake.conditions) {
+    fields.push({ label: "Medical Conditions", value: String(intake.conditions) });
+  }
+
+  // 3. Medications
+  if (intake.medications && String(intake.medications).toLowerCase() !== "none") {
+    fields.push({ label: "Current Medications", value: String(intake.medications) });
+  }
+
+  // 4. Allergies
+  if (intake.allergies && String(intake.allergies).toLowerCase() !== "none") {
+    fields.push({ label: "Allergies", value: String(intake.allergies) });
+  }
+
+  // 5. Activity Level / Exercise
+  if (intake.activity_level) {
+    fields.push({ label: "Activity Level", value: String(intake.activity_level) });
+  } else if (intake.exercise_days !== undefined && intake.exercise_days !== null) {
+    fields.push({ label: "Exercise days / week", value: `${intake.exercise_days} days` });
+  }
+
+  // 6. Sleep hours
+  if (intake.sleep_hours !== undefined && intake.sleep_hours !== null) {
+    fields.push({ label: "Sleep hours / night", value: `${intake.sleep_hours} hours` });
+  }
+
+  // 7. Smoking
+  if (intake.smoking) {
+    fields.push({ label: "Smoking", value: String(intake.smoking) });
+  }
+
+  // 8. Alcohol
+  if (intake.alcohol) {
+    fields.push({ label: "Alcohol", value: String(intake.alcohol) });
+  }
+
+  // 9. Completed On
+  if (consentedAt) {
+    fields.push({ label: "Completed On", value: new Date(consentedAt).toLocaleDateString() });
+  }
+
+  return fields.length > 0 ? fields : null;
+}
 
 export default async function ClientDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,6 +89,14 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
 
   if (!profile) notFound();
 
+  // Filter out internal fields like private_notes & signature from the intake summary count
+  const intakeData = cr?.intake ? { ...cr.intake } : {};
+  if (intakeData.private_notes) delete intakeData.private_notes;
+  if (intakeData.signature) delete intakeData.signature;
+  if (intakeData.signatureName) delete intakeData.signatureName;
+
+  const intakeFields = formatIntake(intakeData, cr?.consented_at || cr?.created_at);
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-10" data-testid="staff-client-detail">
       <h1 className="font-display text-4xl font-medium">{profile.full_name}</h1>
@@ -33,7 +105,23 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
       <ClientTabs id={id} />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Card title="Intake"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(cr?.intake || {}, null, 2)}</pre></Card>
+        <Card title="Intake">
+          {intakeFields ? (
+            <div className="space-y-3">
+              {intakeFields.map((f, idx) => (
+                <div key={idx} className="flex flex-col border-b border-border/30 pb-2 last:border-0 last:pb-0">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{f.label}</span>
+                  <span className="text-sm font-medium mt-0.5 text-foreground">{f.value}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground" data-testid="intake-empty-state">
+              <ClipboardList size={28} className="text-muted-foreground/60 mb-2" />
+              <p className="text-xs">No intake questionnaire has been completed yet.</p>
+            </div>
+          )}
+        </Card>
         <Card title="Consent">{cr?.consented ? <p className="text-sm text-[var(--vx-jade)]">Consented v{cr.consent_version} on {cr.consented_at?.split("T")[0]}</p> : <p className="text-sm text-muted-foreground">Not consented</p>}</Card>
         <Card title="Biological Age Engine">
           {bioRecords && bioRecords.length > 0 ? (

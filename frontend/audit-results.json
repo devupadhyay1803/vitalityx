@@ -1,0 +1,20 @@
+{
+  "errors": [],
+  "networkFailures": [],
+  "successes": [
+    "Home",
+    "Store",
+    "Product Detail",
+    "Staff Dashboard",
+    "Staff Clients",
+    "Staff Care Team",
+    "Staff Messages",
+    "Staff Notifications",
+    "Member Dashboard",
+    "Member Data",
+    "Member Documents",
+    "Member Protocol",
+    "Member Messages",
+    "Member Notifications"
+  ]
+}
