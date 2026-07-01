@@ -78,13 +78,20 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
   const admin = createAdminClient();
   await admin.from("staff_access_logs").insert({ staff_id: user.id, member_id: id, resource_type: "client_overview" });
 
-  const [{ data: profile }, { data: cr }, { data: items }, { data: biomarkers }, { data: labs }, { data: bioRecords }] = await Promise.all([
+  const [{ data: profile }, { data: cr }, { data: items }, { data: biomarkers }, { data: labs }, { data: bioRecords }, { data: careTeam }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", id).single(),
     supabase.from("client_records").select("*").eq("member_id", id).single(),
     supabase.from("protocol_items").select("*").eq("member_id", id).eq("active", true),
     supabase.from("biomarkers").select("*").eq("member_id", id).order("tested_at", { ascending: false }).limit(10),
     supabase.from("lab_results").select("*").eq("member_id", id).order("tested_at", { ascending: false }),
     supabase.from("biological_age_records").select("*").eq("member_id", id).order("calculated_at", { ascending: false }).limit(1),
+    supabase.from("care_team_assignments").select(`
+      id, role,
+      staff:profiles!care_team_assignments_staff_id_fkey(
+        id, full_name,
+        staff_profiles(credentials, profile_photo)
+      )
+    `).eq("member_id", id)
   ]);
 
   if (!profile) notFound();
@@ -104,7 +111,7 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
 
       <ClientTabs id={id} />
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card title="Intake">
           {intakeFields ? (
             <div className="space-y-3">
@@ -133,6 +140,47 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">No bio age computed.</p>
+          )}
+        </Card>
+        <Card title="Care Team">
+          {careTeam && careTeam.length > 0 ? (
+            <div className="space-y-4 mt-1">
+              {careTeam.reduce((acc: any[], current: any) => {
+                const staffId = current.staff?.id;
+                if (staffId && !acc.find((item: any) => item.staff?.id === staffId)) acc.push(current);
+                else if (!staffId) acc.push(current);
+                return acc;
+              }, []).map((assignment: any) => {
+                const staff = assignment.staff;
+                if (!staff) return (
+                  <div key={assignment.id} className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted font-medium text-muted-foreground text-xs">?</span>
+                    <div>
+                      <p className="font-medium text-sm text-muted-foreground">Unavailable</p>
+                      <p className="text-[10px] text-muted-foreground">{assignment.role}</p>
+                    </div>
+                  </div>
+                );
+                const profile = staff.staff_profiles?.[0] || {};
+                return (
+                  <div key={assignment.id} className="flex items-center gap-3">
+                    {profile.profile_photo ? (
+                      <img src={profile.profile_photo} alt={staff.full_name} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                    ) : (
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--vx-jade)]/20 font-medium text-[var(--vx-jade)] text-xs">
+                        {staff.full_name.charAt(0) || "?"}
+                      </span>
+                    )}
+                    <div>
+                      <p className="font-medium text-sm">{staff.full_name}</p>
+                      <p className="text-[10px] text-muted-foreground">{assignment.role} {profile.credentials ? `• ${profile.credentials}` : ""}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No team assigned.</p>
           )}
         </Card>
       </div>

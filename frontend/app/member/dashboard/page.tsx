@@ -205,15 +205,42 @@ export default function MemberDashboard() {
         {/* Team preview */}
         <div data-testid="my-team" className="vx-card p-6">
           <h2 className="font-display text-xl">My team</h2>
-          {d?.coach ? (
-            <div className="mt-4 flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--vx-jade)]/20 font-medium">{getInitials(d.coach.full_name)}</span>
-              <div>
-                <p className="font-medium">{d.coach.full_name}</p>
-                <p className="text-xs text-muted-foreground">Lead Coach</p>
-              </div>
+          {team.length > 0 ? (
+            <div className="mt-4 space-y-4">
+              {team.reduce((acc: any[], current: any) => {
+                const staffId = current.staff?.id;
+                if (staffId && !acc.find(item => item.staff?.id === staffId)) {
+                  acc.push(current);
+                }
+                return acc;
+              }, []).map((assignment: any) => {
+                const staff = assignment.staff;
+                if (!staff) return (
+                  <div key={assignment.id} className="flex items-center gap-3">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted font-medium text-muted-foreground">?</span>
+                    <div>
+                      <p className="font-medium text-muted-foreground">Unavailable</p>
+                      <p className="text-xs text-muted-foreground">{assignment.role}</p>
+                    </div>
+                  </div>
+                );
+                const profile = staff.staff_profiles?.[0] || {};
+                return (
+                  <div key={assignment.id} className="flex items-center gap-3">
+                    {profile.profile_photo ? (
+                      <img src={profile.profile_photo} alt={staff.full_name} className="h-12 w-12 rounded-full object-cover" />
+                    ) : (
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--vx-jade)]/20 font-medium">{getInitials(staff.full_name)}</span>
+                    )}
+                    <div>
+                      <p className="font-medium">{staff.full_name}</p>
+                      <p className="text-xs text-muted-foreground">{assignment.role} {profile.credentials ? `• ${profile.credentials}` : ""}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ) : <p className="mt-4 text-sm text-muted-foreground">Coach assignment in progress.</p>}
+          ) : <p className="mt-4 text-sm text-muted-foreground">Care team assignment in progress.</p>}
           <div className="mt-5 grid grid-cols-2 gap-2">
             <Link href="/member/messages" className="btn btn-outline text-xs"><MessageSquare size={14} /> Message</Link>
             <Link href="/member/sessions" className="btn btn-jade text-xs"><Calendar size={14} /> Book</Link>

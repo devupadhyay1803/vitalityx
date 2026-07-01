@@ -96,8 +96,27 @@ export default function MemberCareTeamPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assignments?.map((assignment: any) => {
+          {assignments?.reduce((acc: any[], current: any) => {
+            const staffId = current.staff?.id;
+            if (staffId && !acc.find((item: any) => item.staff?.id === staffId)) {
+              acc.push(current);
+            } else if (!staffId) {
+              acc.push(current);
+            }
+            return acc;
+          }, []).map((assignment: any) => {
             const staff = assignment.staff;
+            if (!staff) {
+              return (
+                <div key={assignment.id} className="vx-card flex flex-col items-center justify-center py-10 text-center">
+                  <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-3xl font-medium text-muted-foreground mb-4">
+                    ?
+                  </div>
+                  <h3 className="font-display text-xl font-medium text-muted-foreground">Unavailable</h3>
+                  <p className="text-sm text-muted-foreground">{assignment.role}</p>
+                </div>
+              );
+            }
             const profile = staff.staff_profiles?.[0] || {};
             const combinedStaff = { ...staff, staff_profiles: profile };
 

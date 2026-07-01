@@ -26,7 +26,10 @@ export default function StaffCareTeamManagement() {
         id, full_name, email,
         care_team_assignments!care_team_assignments_member_id_fkey(
           id, role, is_primary,
-          staff:profiles!care_team_assignments_staff_id_fkey(id, full_name)
+          staff:profiles!care_team_assignments_staff_id_fkey(
+            id, full_name,
+            staff_profiles(credentials, profile_photo)
+          )
         )
       `)
       .eq("role", "Member")
@@ -142,15 +145,26 @@ export default function StaffCareTeamManagement() {
                         <span className="text-muted-foreground text-xs italic">No team assigned</span>
                       ) : (
                         <div className="flex flex-col gap-2">
-                          {m.care_team_assignments.map((a: any) => (
+                          {m.care_team_assignments.reduce((acc: any[], current: any) => {
+                            const staffId = current.staff?.id;
+                            if (staffId && !acc.find((item: any) => item.staff?.id === staffId)) acc.push(current);
+                            else if (!staffId) acc.push(current);
+                            return acc;
+                          }, []).map((a: any) => {
+                            const profile = a.staff?.staff_profiles?.[0] || {};
+                            return (
                             <div key={a.id} className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                                  {getInitials(a.staff?.full_name)}
-                                </div>
+                                {profile.profile_photo ? (
+                                  <img src={profile.profile_photo} alt={a.staff?.full_name || "Unknown"} className="w-6 h-6 rounded-full object-cover" />
+                                ) : (
+                                  <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                    {a.staff ? getInitials(a.staff.full_name) : "?"}
+                                  </div>
+                                )}
                                 <div>
-                                  <p className="text-xs font-medium">{a.staff?.full_name}</p>
-                                  <p className="text-[10px] text-muted-foreground">{a.role}</p>
+                                  <p className="text-xs font-medium">{a.staff ? a.staff.full_name : "Unavailable"}</p>
+                                  <p className="text-[10px] text-muted-foreground">{a.role} {profile.credentials ? `• ${profile.credentials}` : ""}</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
@@ -169,7 +183,8 @@ export default function StaffCareTeamManagement() {
                                 </button>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </td>
