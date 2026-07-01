@@ -3,6 +3,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/components/portal/user-provider";
 import Link from "next/link";
+import { fetchMemberAuditLogs } from "./actions";
 import {
   Calendar, FlaskConical, ListChecks, Users, MessageSquare,
   Package, Activity, CheckCircle2, FileText, XCircle, RefreshCw,
@@ -40,6 +41,8 @@ async function fetchActivity(userId: string): Promise<TimelineEvent[]> {
     { data: orders },
     { data: subs },
     { data: notifications },
+    { data: protocolCompletions },
+    auditLogs,
   ] = await Promise.all([
     supabase.from("appointments").select("id,title,status,scheduled_start,session_type,updated_at,created_at").eq("member_id", userId).order("created_at", { ascending: false }).limit(50),
     supabase.from("lab_results").select("id,biological_age,tested_at,created_at").eq("member_id", userId).order("created_at", { ascending: false }).limit(20),
@@ -50,6 +53,8 @@ async function fetchActivity(userId: string): Promise<TimelineEvent[]> {
     supabase.from("orders").select("id,amount_total,currency,created_at").eq("member_id", userId).order("created_at", { ascending: false }).limit(20),
     supabase.from("supplement_subscriptions").select("id,product_name,status,created_at").eq("member_id", userId).order("created_at", { ascending: false }).limit(20),
     supabase.from("notifications").select("id,title,message,type,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(30),
+    supabase.from("protocol_completions").select("id,item_id,completed_at,item:protocol_items(title)").eq("member_id", userId).order("completed_at", { ascending: false }).limit(20),
+    fetchMemberAuditLogs(userId),
   ]);
 
   // Appointments
@@ -114,6 +119,27 @@ async function fetchActivity(userId: string): Promise<TimelineEvent[]> {
       if (notif.type?.includes("message")) events.push({ id: `notif-${notif.id}`, title: "Message Received", description: notif.message ?? notif.title ?? "You received a new message.", date: new Date(notif.created_at), iconName: "MessageSquare", iconColor: "text-blue-400", link: "/member/messages" });
     } catch { /* skip */ }
   }
+
+  // Protocol Completions
+  for (const pc of protocolCompletions ?? []) {
+    try {
+      const itemData = pc.item as any;
+      const itemTitle = Array.isArray(itemData) ? itemData[0]?.title : itemData?.title;
+      events.push({ id: `pc-${pc.id}`, title: "Protocol Completed", description: `You completed "${itemTitle ?? "a protocol task"}".`, date: new Date(pc.completed_at), iconName: "CheckCircle2", iconColor: "text-[var(--vx-jade)]", link: "/member/dashboard" });
+    } catch { /* skip */ }
+  }
+
+  // Audit Logs
+  for (const log of auditLogs ?? []) {
+    try {
+      if (log.action === "Protocol updated") {
+        events.push({ id: `audit-${log.id}`, title: "Protocol Updated", description: "Your care protocol was updated.", date: new Date(log.created_at), iconName: "ListChecks", iconColor: "text-purple-400", link: "/member/dashboard" });
+      } else if (log.action === "Lab reviewed") {
+        events.push({ id: `audit-${log.id}`, title: "Lab Reviewed", description: "Your lab results were reviewed by the care team.", date: new Date(log.created_at), iconName: "FlaskConical", iconColor: "text-amber-400", link: "/member/dashboard" });
+      }
+    } catch { /* skip */ }
+  }
+
 
   // Deduplicate
   const seen = new Set<string>();

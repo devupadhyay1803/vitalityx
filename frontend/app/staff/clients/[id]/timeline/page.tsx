@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ClientTabs } from "@/components/staff/client-tabs";
 import {
   Activity, FileText, Upload, CheckCircle2, Calendar, FlaskConical,
-  ListChecks, Users, Package, XCircle, RefreshCw, Dna, Clock
+  ListChecks, Users, Package, XCircle, RefreshCw, Dna, Clock, MessageSquare
 } from "lucide-react";
 
 // ──────────────────────────────────────────────
@@ -39,6 +39,9 @@ export default async function TimelinePage({ params }: { params: Promise<{ id: s
     { data: documents },
     { data: orders },
     { data: subs },
+    { data: notifications },
+    { data: protocolCompletions },
+    { data: auditLogs },
   ] = await Promise.all([
     admin.from("staff_access_logs").select("*").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
     admin.from("lab_results").select("id,biological_age,tested_at,created_at,pdf_url").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
@@ -49,6 +52,9 @@ export default async function TimelinePage({ params }: { params: Promise<{ id: s
     admin.from("documents").select("id,title,category,created_at").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
     admin.from("orders").select("id,amount_total,currency,created_at").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
     admin.from("supplement_subscriptions").select("id,product_name,status,created_at").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
+    admin.from("notifications").select("id,title,message,type,created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(30),
+    admin.from("protocol_completions").select("id,item_id,completed_at,item:protocol_items(title)").eq("member_id", id).order("completed_at", { ascending: false }).limit(20),
+    admin.from("audit_logs").select("id,action,created_at,resource_type,metadata").eq("target_user_id", id).in("action", ["Protocol updated", "Lab reviewed"]).order("created_at", { ascending: false }).limit(20),
   ]);
 
   const events: TimelineEvent[] = [];
@@ -204,7 +210,68 @@ export default async function TimelinePage({ params }: { params: Promise<{ id: s
     } catch { /* skip */ }
   }
 
-  // ── 10. Account creation ─────────────────────
+  // ── 10. Protocol Completions ─────────────────
+  for (const comp of protocolCompletions ?? []) {
+    try {
+      const itemData = comp.item as any;
+      const itemTitle = Array.isArray(itemData) ? itemData[0]?.title : itemData?.title;
+      events.push({
+        id: `protocol-comp-${comp.id}`,
+        type: "protocol",
+        title: "Protocol Item Completed",
+        description: `"${itemTitle ?? "Item"}" was marked as completed.`,
+        date: new Date(comp.completed_at),
+        icon: <CheckCircle2 size={16} className="text-[var(--vx-jade)]" />,
+        link: `/staff/clients/${id}/protocol`,
+      });
+    } catch { /* skip */ }
+  }
+
+  // ── 11. Messages / Notifications ──────────────
+  for (const notif of notifications ?? []) {
+    try {
+      if (notif.type?.includes("message")) {
+        events.push({
+          id: `notif-${notif.id}`,
+          type: "message",
+          title: "Message Received",
+          description: notif.message ?? notif.title ?? "New message received.",
+          date: new Date(notif.created_at),
+          icon: <MessageSquare size={16} className="text-blue-400" />,
+          link: `/staff/clients/${id}/messages`,
+        });
+      }
+    } catch { /* skip */ }
+  }
+
+  // ── 12. Audit Logs (Protocol updated, Lab reviewed) ──
+  for (const log of auditLogs ?? []) {
+    try {
+      if (log.action === "Protocol updated") {
+        events.push({
+          id: `audit-${log.id}`,
+          type: "protocol",
+          title: "Protocol Updated",
+          description: "Protocol was updated.",
+          date: new Date(log.created_at),
+          icon: <ListChecks size={16} className="text-purple-400" />,
+          link: `/staff/clients/${id}/protocol`,
+        });
+      } else if (log.action === "Lab reviewed") {
+        events.push({
+          id: `audit-${log.id}`,
+          type: "lab",
+          title: "Lab Reviewed",
+          description: "Lab results were reviewed by the care team.",
+          date: new Date(log.created_at),
+          icon: <FlaskConical size={16} className="text-amber-400" />,
+          link: `/staff/clients/${id}/labs`,
+        });
+      }
+    } catch { /* skip */ }
+  }
+
+  // ── 13. Account creation ─────────────────────
   if (profile.created_at) {
     events.push({
       id: "account-created",

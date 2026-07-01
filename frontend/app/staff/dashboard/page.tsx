@@ -14,7 +14,7 @@ export default async function StaffDashboard() {
   const tomorrowDate = new Date(todayDate.getTime() + 86400000);
 
   const [{ count: clientCount }, { data: todaysAppointments }, { data: pendingAppointments }, { count: careTeamCount }] = await Promise.all([
-    supabase.from("client_records").select("*", { count: "exact", head: true }).eq("assigned_coach_id", user!.id),
+    supabase.from("care_team_assignments").select("member_id", { count: "exact", head: true }).eq("staff_id", user!.id).eq("role", "Lead Coach"),
     supabase.from("appointments").select("*, member:profiles!appointments_member_id_fkey(full_name)")
       .eq("staff_id", user!.id)
       .gte("scheduled_start", todayDate.toISOString())
@@ -33,8 +33,8 @@ export default async function StaffDashboard() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Your clients" value={String(clientCount ?? 0)} testId="stat-clients" />
         <Stat label="Care Team Cases" value={String(careTeamCount ?? 0)} testId="stat-care-team" />
-        <Stat label="Today's sessions" value={String(todaysAppointments?.length || 0)} testId="stat-today" />
-        <Stat label="Pending requests" value={String(pendingAppointments?.length || 0)} testId="stat-pending" />
+        <Stat label="Today's sessions" value={String(todaysAppointments?.length ?? 0)} testId="stat-today" />
+        <Stat label="Pending requests" value={String(pendingAppointments?.length ?? 0)} testId="stat-pending" />
       </div>
       
       <div className="mt-10 grid md:grid-cols-2 gap-8">

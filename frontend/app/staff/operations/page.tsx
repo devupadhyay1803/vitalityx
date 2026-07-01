@@ -58,8 +58,8 @@ export default async function OperationsDashboard() {
     supabase.from("profiles").select("id, full_name, role").in("role", ["Physician", "Health Coach", "Nutritionist", "Lab Coordinator"]),
     // Recent audits
     supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(5),
-    // Pipeline grouping (using client_records as proxy)
-    supabase.from("client_records").select("status")
+    // Pipeline grouping (using profiles created_at as proxy for new vs active)
+    supabase.from("profiles").select("created_at").eq("role", "Member")
   ]);
 
   // Aggregate metrics
@@ -67,12 +67,13 @@ export default async function OperationsDashboard() {
   
   // Pipeline counts
   const pipeline = { new: 0, active: 0, pending: 0, completed: 0 };
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   (pipelineData || []).forEach(record => {
-    const s = record.status?.toLowerCase() || '';
-    if (s.includes("active")) pipeline.active++;
-    else if (s.includes("pending")) pipeline.pending++;
-    else if (s.includes("complete")) pipeline.completed++;
-    else pipeline.new++;
+    if (new Date(record.created_at) > oneWeekAgo) {
+      pipeline.new++;
+    } else {
+      pipeline.active++;
+    }
   });
 
   return (
@@ -96,11 +97,11 @@ export default async function OperationsDashboard() {
       <section className="mb-12">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Executive Summary</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          <StatCard title="Active Members" value={activeMembers} icon={Users} trend="+12% this month" />
+          <StatCard title="Active Members" value={activeMembers} icon={Users} />
           <StatCard title="Active Staff" value={activeStaff} icon={Shield} />
           <StatCard title="Care Teams" value={activeCareTeams} icon={Users} />
-          <StatCard title="Today's Sessions" value={todaysAppointments} icon={Calendar} trend="3 pending" />
-          <StatCard title="Monthly Revenue" value={`$${(monthlyRevenue / 100).toLocaleString()}`} icon={DollarSign} trend="+5% MRR" />
+          <StatCard title="Today's Sessions" value={todaysAppointments} icon={Calendar} />
+          <StatCard title="Monthly Revenue" value={`$${(monthlyRevenue / 100).toLocaleString()}`} icon={DollarSign} />
           <StatCard title="Active Subs" value={activeSubscriptions} icon={Package} />
           <StatCard title="Pending Docs" value={pendingDocuments} icon={FileText} alert={(pendingDocuments ?? 0) > 10} />
           <StatCard title="Notifications Today" value={notificationsSent} icon={Bell} />
@@ -187,8 +188,10 @@ export default async function OperationsDashboard() {
             <h2 className="font-display text-xl mb-6">Staff Utilization</h2>
             <div className="space-y-6">
               {allStaff?.map(staff => {
-                const hash = staff.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-                const utilization = (hash % 61) + 30; // 30-90%
+                const staffAppointments = (allAppointments || []).filter(a => a.staff?.[0]?.full_name === staff.full_name).length;
+                // Avoid divide by zero, assuming 8 sessions is max per day
+                const maxSessions = 8;
+                const utilization = Math.round((staffAppointments / maxSessions) * 100);
                 return (
                   <div key={staff.id}>
                     <div className="flex justify-between text-sm mb-2">
@@ -299,33 +302,16 @@ export default async function OperationsDashboard() {
               <div>
                 <h3 className="text-sm font-medium mb-3">Pending Lab Reviews</h3>
                 <div className="space-y-3">
-                  {/* Mock lab reviews */}
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/50 flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium">Comprehensive Panel</p>
-                      <p className="text-xs text-muted-foreground">Uploaded 2h ago</p>
-                    </div>
-                    <Link href="/staff/clients" className="text-xs text-[var(--vx-jade)] hover:underline">Review</Link>
-                  </div>
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/50 flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium">Genetics Sequencing</p>
-                      <p className="text-xs text-muted-foreground">Uploaded 5h ago</p>
-                    </div>
-                    <Link href="/staff/clients" className="text-xs text-[var(--vx-jade)] hover:underline">Review</Link>
+                  <div className="p-3 bg-muted/20 rounded-lg border border-border/50 text-center text-sm text-muted-foreground">
+                    Querying pending reviews...
                   </div>
                 </div>
               </div>
               <div>
                 <h3 className="text-sm font-medium mb-3">Recent Document Uploads</h3>
                 <div className="space-y-3">
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/50">
-                    <p className="text-sm font-medium">Dietary Protocol v2</p>
-                    <p className="text-xs text-muted-foreground">by Sarah Jenkins</p>
-                  </div>
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/50">
-                    <p className="text-sm font-medium">Supplement Schedule</p>
-                    <p className="text-xs text-muted-foreground">by Dr. Emily Chen</p>
+                  <div className="p-3 bg-muted/20 rounded-lg border border-border/50 text-center text-sm text-muted-foreground">
+                    Check documents module for updates.
                   </div>
                 </div>
               </div>
@@ -392,7 +378,7 @@ function StatCard({ title, value, icon: Icon, trend, alert }: { title: string, v
         <Icon size={16} className={alert ? "text-amber-500" : "text-muted-foreground shrink-0"} />
       </div>
       <div className="mt-4">
-        <p className="font-display text-2xl">{value !== null && value !== undefined ? value : "-"}</p>
+        <p className="font-display text-2xl">{value !== null && value !== undefined ? value : 0}</p>
         {trend && <p className="text-[10px] text-[var(--vx-jade)] mt-1">{trend}</p>}
       </div>
     </div>
