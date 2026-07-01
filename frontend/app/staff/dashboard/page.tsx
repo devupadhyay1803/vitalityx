@@ -14,7 +14,7 @@ export default async function StaffDashboard() {
  const tomorrowDate = new Date(todayDate.getTime() + 86400000);
 
  const [{ count: clientCount }, { data: todaysAppointments }, { data: pendingAppointments }, { count: careTeamCount }] = await Promise.all([
- supabase.from("care_team_assignments").select("member_id", { count: "exact", head: true }).eq("staff_id", user!.id).eq("role", "Lead Coach"),
+ supabase.from("care_team_assignments").select("member_id", { count: "exact", head: true }).eq("staff_id", user!.id).eq("role", "Health Coach"),
  supabase.from("appointments").select("*, member:profiles!appointments_member_id_fkey(full_name)")
  .eq("staff_id", user!.id)
  .gte("scheduled_start", todayDate.toISOString())

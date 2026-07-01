@@ -142,7 +142,7 @@ export default function MemberDashboard() {
  {/* Stat row */}
  <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
  <StatCard label="Biological age" value={latestBio?.biological_age != null ? `${latestBio.biological_age} yrs` : "—"} testId="stat-bio-age" />
- <StatCard label="Longevity score" value={latestBio?.longevity_score != null ? `${latestBio.longevity_score}` : "—"} testId="stat-longevity" />
+ <StatCard label="Longevity score" value={latestBio?.longevity_score != null && String(latestBio.longevity_score) !== "null" ? `${latestBio.longevity_score}` : "—"} testId="stat-longevity" />
  <StatCard label="7-day completion" value={`${completion7}%`} testId="stat-completion" />
  <StatCard label="Next session" value={d?.next_session ? formatDate(d.next_session.scheduled_start) : "Not booked"} testId="stat-next-session" />
  </div>
@@ -161,15 +161,15 @@ export default function MemberDashboard() {
  </div>
  <div className="vx-card p-4 bg-muted/20 border-border/50">
  <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Metabolic Risk</p>
- <p className="font-display text-xl">{latestBio.metabolic_score != null ? `${latestBio.metabolic_score}/100` : "—"}</p>
+ <p className="font-display text-xl">{latestBio.metabolic_score != null && String(latestBio.metabolic_score) !== "null" ? `${latestBio.metabolic_score}/100` : "—"}</p>
  </div>
  <div className="vx-card p-4 bg-muted/20 border-border/50">
  <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Inflammation Risk</p>
- <p className="font-display text-xl">{latestBio.inflammation_score != null ? `${latestBio.inflammation_score}/100` : "—"}</p>
+ <p className="font-display text-xl">{latestBio.inflammation_score != null && String(latestBio.inflammation_score) !== "null" ? `${latestBio.inflammation_score}/100` : "—"}</p>
  </div>
  <div className="vx-card p-4 bg-muted/20 border-border/50">
  <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Confidence Score</p>
- <p className="font-display text-xl">{latestBio.confidence_score != null ? `${latestBio.confidence_score}%` : "—"}</p>
+ <p className="font-display text-xl">{latestBio.confidence_score != null && String(latestBio.confidence_score) !== "null" ? `${latestBio.confidence_score}%` : "—"}</p>
  </div>
  </div>
  )}
@@ -280,8 +280,8 @@ export default function MemberDashboard() {
  {latestBio ? (
  <>
  <div className="p-3 bg-[var(--vx-jade)]/10 text-[var(--vx-jade)] border border-[var(--vx-jade)]/20 rounded-lg text-sm">
- <p className="font-medium">Longevity Score is {latestBio.longevity_score != null ? latestBio.longevity_score : "—"}</p>
- <p className="opacity-90 text-xs mt-1">Based on {bioHistory.length} data points. Your confidence score is {latestBio.confidence_score != null ? `${latestBio.confidence_score}%` : "—"}.</p>
+ <p className="font-medium">Longevity Score is {latestBio.longevity_score != null && String(latestBio.longevity_score) !== "null" ? latestBio.longevity_score : "—"}</p>
+ <p className="opacity-90 text-xs mt-1">Based on {bioHistory.length} data points. Your confidence score is {latestBio.confidence_score != null && String(latestBio.confidence_score) !== "null" ? `${latestBio.confidence_score}%` : "—"}.</p>
  </div>
  {latestBio.biological_age != null && latestBio.chronological_age != null && latestBio.biological_age < latestBio.chronological_age && (
  <div className="p-3 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-lg text-sm">

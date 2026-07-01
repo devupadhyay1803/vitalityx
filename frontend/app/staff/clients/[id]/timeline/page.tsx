@@ -43,7 +43,7 @@ export default async function TimelinePage({ params }: { params: Promise<{ id: s
  { data: protocolCompletions },
  { data: auditLogs },
  ] = await Promise.all([
- admin.from("staff_access_logs").select("*").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
+ admin.from("staff_access_logs").select("*, staff:profiles!staff_id(full_name)").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
  admin.from("lab_results").select("id,biological_age,tested_at,created_at,pdf_url").eq("member_id", id).order("created_at", { ascending: false }).limit(20),
  admin.from("appointments").select("id,title,status,scheduled_start,session_type,updated_at,created_at").eq("member_id", id).order("created_at", { ascending: false }).limit(50),
  admin.from("protocol_items").select("id,title,created_at,active,created_by").eq("member_id", id).order("created_at", { ascending: false }).limit(30),
@@ -66,7 +66,7 @@ export default async function TimelinePage({ params }: { params: Promise<{ id: s
  id: `log-${log.id}`,
  type: "access",
  title: "Staff Access",
- description: `Staff member (${String(log.staff_id).substring(0, 6)}…) accessed ${log.resource_type ?? "record"}`,
+ description: `${log.staff?.full_name || "A staff member"} accessed ${log.resource_type ?? "record"}`,
  date: new Date(log.created_at),
  icon: <Activity size={16} className="text-blue-400" />,
  });

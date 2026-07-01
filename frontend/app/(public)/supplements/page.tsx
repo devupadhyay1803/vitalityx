@@ -18,7 +18,7 @@ export default function SupplementsStorefront() {
  <h1 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">
  Clinical-Grade Supplements
  </h1>
- <p className="mt-4 text-lg text-muted-foreground">
+ <p className="mt-4 text-lg text-muted-foreground break-words whitespace-normal text-wrap">
  Strictly peer-reviewed ingredients. Optimal bioavailability. Third-party tested for purity and potency.
  </p>
  </div>

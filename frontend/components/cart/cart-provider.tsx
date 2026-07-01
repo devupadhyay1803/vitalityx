@@ -40,6 +40,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
  console.error(e);
  }
  }
+ setHydrated(true);
 
  return () => {
  console.log("CartProvider unmounted");
@@ -47,9 +48,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 }, []);
 
  useEffect(() => {
+ if (hydrated) {
  console.log("Saving to localStorage:", items);
  localStorage.setItem("vx_cart", JSON.stringify(items));
-}, [items]);
+ }
+}, [items, hydrated]);
 
  const value: CartCtx = {
  items,

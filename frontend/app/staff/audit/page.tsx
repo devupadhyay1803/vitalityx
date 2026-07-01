@@ -4,11 +4,26 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { Search, Filter, ShieldAlert } from "lucide-react";
+import { useUser } from "@/components/portal/user-provider";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function StaffAuditPage() {
- const supabase = createClient();
- const [search, setSearch] = useState("");
- const [actionFilter, setActionFilter] = useState("All");
+  const supabase = createClient();
+  const [search, setSearch] = useState("");
+  const [actionFilter, setActionFilter] = useState("All");
+  const { profile } = useUser();
+
+  if (profile?.role !== "Admin" && profile?.role !== "Super Admin") {
+    return (
+      <div className="mx-auto max-w-6xl px-6 py-10" data-testid="staff-audit-page">
+        <EmptyState 
+           icon={ShieldAlert}
+           title="Access Restricted"
+           description="You do not have permission to view audit logs. This area is restricted to administrators."
+        />
+      </div>
+    );
+  }
 
  const { data: logs, isLoading } = useSWR("staff-audit-logs", async () => {
  const { data, error } = await supabase

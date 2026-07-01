@@ -78,7 +78,7 @@ export default function BillingPage() {
  <div>
  <span className="badge badge-jade mb-2 text-xs">Active</span>
  <h2 className="font-display text-2xl font-medium">{sub.product_name}</h2>
- <p className="mt-2 text-lg">$450 / month</p>
+ {sub.price_cents ? <p className="mt-2 text-lg">${(sub.price_cents / 100).toFixed(2)} / month</p> : null}
  </div>
  <button onClick={handleManageSub} className="btn btn-outline flex items-center gap-2 text-sm">
  <SettingsIcon /> Manage

@@ -64,8 +64,9 @@ export async function updateSession(request: NextRequest) {
 
     // MFA Enforcement for Staff
     if (isStaff && role !== "Member" && !path.startsWith("/staff/mfa")) {
-      const { data: assurance } =
-  await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      // Must call getSession to decode the JWT into the client state before checking AAL
+      await supabase.auth.getSession();
+      const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
 if (assurance && "currentLevel" in assurance) {
   if (assurance.currentLevel === "aal1") {
