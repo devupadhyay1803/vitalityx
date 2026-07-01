@@ -24,21 +24,32 @@ const Ctx = createContext<CartCtx | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  console.log("CartProvider render:", items);
+  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    Promise.resolve().then(() => {
-      const raw = typeof window !== "undefined" ? localStorage.getItem("vx_cart") : null;
-      if (raw) {
-        try { setItems(JSON.parse(raw)); } catch {}
-      }
-    });
-  }, []);
+ useEffect(() => {
+  console.log("CartProvider mounted");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("vx_cart", JSON.stringify(items));
+  const raw = localStorage.getItem("vx_cart");
+  console.log("Loaded from localStorage:", raw);
+
+  if (raw) {
+    try {
+      setItems(JSON.parse(raw));
+    } catch (e) {
+      console.error(e);
     }
-  }, [items]);
+  }
+
+  return () => {
+    console.log("CartProvider unmounted");
+  };
+}, []);
+
+  useEffect(() => {
+  console.log("Saving to localStorage:", items);
+  localStorage.setItem("vx_cart", JSON.stringify(items));
+}, [items]);
 
   const value: CartCtx = {
     items,

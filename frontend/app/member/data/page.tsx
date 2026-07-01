@@ -134,7 +134,7 @@ function GeneticsList() {
 function BioAgeTrend() {
   const { user } = useUser();
   const { data } = useSWR(["bioage", user.id], async () => {
-    const { data } = await supabase.from("biological_age_records").select("*").eq("member_id", user.id).order("recorded_at", { ascending: true });
+    const { data } = await supabase.from("biological_age_records").select("*").eq("member_id", user.id).order("calculated_at", { ascending: true });
     return data || [];
   });
   if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
@@ -144,7 +144,9 @@ function BioAgeTrend() {
     <div className="vx-card p-6" data-testid="bio-age-card">
       <p className="text-xs uppercase tracking-widest text-muted-foreground">Latest biological age</p>
       <p className="mt-2 font-display text-5xl">{latest.biological_age} yrs</p>
-      <p className="mt-1 text-sm text-muted-foreground">Recorded {new Date(latest.recorded_at).toLocaleDateString()}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Calculated {new Date(latest.calculated_at).toLocaleDateString()}
+      </p>
     </div>
   );
 }
