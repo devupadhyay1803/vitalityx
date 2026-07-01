@@ -11,18 +11,21 @@ const supabase = createClient();
 export default function BillingPage() {
   const [tab, setTab] = useState<"subscriptions" | "orders" | "invoices">("subscriptions");
 
-  const { data: user } = useSWR("user", async () => {
-    const { data } = await supabase.auth.getUser();
+  const { data: user, error: userError } = useSWR("user", async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
     return data.user;
   });
 
-  const { data: orders } = useSWR(user ? `orders-${user.id}` : null, async () => {
-    const { data } = await supabase.from("orders").select("*").eq("member_id", user!.id).order("created_at", { ascending: false });
+  const { data: orders, error: ordersError, isLoading: ordersLoading, mutate: mutateOrders } = useSWR(user ? `orders-${user.id}` : null, async () => {
+    const { data, error } = await supabase.from("orders").select("*").eq("member_id", user!.id).order("created_at", { ascending: false });
+    if (error) throw error;
     return data || [];
   });
 
-  const { data: subscriptions } = useSWR(user ? `subscriptions-${user.id}` : null, async () => {
-    const { data } = await supabase.from("supplement_subscriptions").select("*").eq("member_id", user!.id).eq("status", "active");
+  const { data: subscriptions, error: subsError, isLoading: subsLoading, mutate: mutateSubs } = useSWR(user ? `subscriptions-${user.id}` : null, async () => {
+    const { data, error } = await supabase.from("supplement_subscriptions").select("*").eq("member_id", user!.id).eq("status", "active");
+    if (error) throw error;
     return data || [];
   });
 
@@ -59,7 +62,14 @@ export default function BillingPage() {
       <div className="max-w-3xl">
         {tab === "subscriptions" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {subscriptions?.length ? subscriptions.map((sub: any) => (
+            {subsLoading ? (
+              <div className="h-40 w-full bg-muted rounded-xl animate-pulse"></div>
+            ) : subsError ? (
+              <div className="p-6 text-center text-destructive">
+                <p>Failed to load subscriptions.</p>
+                <button onClick={() => mutateSubs()} className="btn btn-outline text-xs mt-2">Try again</button>
+              </div>
+            ) : subscriptions?.length ? subscriptions.map((sub: any) => (
               <div key={sub.id} className="vx-card p-6 border-l-4 border-[var(--vx-jade)] relative overflow-hidden mb-4">
                 <div className="absolute -right-10 -top-10 text-[var(--vx-jade)]/10">
                   <ActivityIcon />
@@ -85,59 +95,73 @@ export default function BillingPage() {
                   </div>
                 </div>
               </div>
-            )) : <p>No active subscriptions found.</p>}
+            )) : <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">No active subscriptions found.</div>}
           </div>
         )}
 
         {tab === "orders" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="vx-card p-6 relative">
-               <h3 className="font-medium mb-4 flex items-center gap-2 border-b border-border pb-3">
-                 <Package size={18} className="text-[var(--vx-jade)]" /> Order #ORD-7391-B
-               </h3>
-               <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4 mb-6">
-                 <div>
-                   <p className="font-semibold text-lg">VitalityX DNA Methylation Kit</p>
-                   <p className="text-sm text-muted-foreground mt-1">Ordered on Jun 22, 2026</p>
-                 </div>
-                 <span className="badge badge-amber flex items-center gap-1"><Truck size={12} /> In Transit</span>
-               </div>
-               
-               {/* Tracking Progress */}
-               <div className="relative pt-2 pb-2">
-                 <div className="absolute top-1/2 left-0 w-full h-1 bg-muted -translate-y-1/2 rounded-full overflow-hidden">
-                   <div className="w-[60%] h-full bg-[var(--vx-jade)] rounded-full"></div>
-                 </div>
-                 <div className="relative flex justify-between text-xs font-medium">
-                   <div className="flex flex-col items-center gap-2 text-[var(--vx-jade)]">
-                     <span className="h-4 w-4 rounded-full bg-[var(--vx-jade)] ring-4 ring-background z-10" />
-                     <span>Confirmed</span>
+            {ordersLoading ? (
+              <div className="space-y-4">
+                <div className="h-64 w-full bg-muted rounded-xl animate-pulse"></div>
+                <div className="h-24 w-full bg-muted rounded-xl animate-pulse"></div>
+              </div>
+            ) : ordersError ? (
+              <div className="p-6 text-center text-destructive">
+                <p>Failed to load orders.</p>
+                <button onClick={() => mutateOrders()} className="btn btn-outline text-xs mt-2">Try again</button>
+              </div>
+            ) : !orders || orders.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">No orders found.</div>
+            ) : (
+              <>
+                <div className="vx-card p-6 relative">
+                   <h3 className="font-medium mb-4 flex items-center gap-2 border-b border-border pb-3">
+                     <Package size={18} className="text-[var(--vx-jade)]" /> Order #ORD-7391-B
+                   </h3>
+                   <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4 mb-6">
+                     <div>
+                       <p className="font-semibold text-lg">VitalityX DNA Methylation Kit</p>
+                       <p className="text-sm text-muted-foreground mt-1">Ordered on Jun 22, 2026</p>
+                     </div>
+                     <span className="badge badge-amber flex items-center gap-1"><Truck size={12} /> In Transit</span>
                    </div>
-                   <div className="flex flex-col items-center gap-2 text-[var(--vx-jade)]">
-                     <span className="h-4 w-4 rounded-full bg-[var(--vx-jade)] ring-4 ring-background z-10" />
-                     <span>Shipped</span>
+                   
+                   {/* Tracking Progress */}
+                   <div className="relative pt-2 pb-2">
+                     <div className="absolute top-1/2 left-0 w-full h-1 bg-muted -translate-y-1/2 rounded-full overflow-hidden">
+                       <div className="w-[60%] h-full bg-[var(--vx-jade)] rounded-full"></div>
+                     </div>
+                     <div className="relative flex justify-between text-xs font-medium">
+                       <div className="flex flex-col items-center gap-2 text-[var(--vx-jade)]">
+                         <span className="h-4 w-4 rounded-full bg-[var(--vx-jade)] ring-4 ring-background z-10" />
+                         <span>Confirmed</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-2 text-[var(--vx-jade)]">
+                         <span className="h-4 w-4 rounded-full bg-[var(--vx-jade)] ring-4 ring-background z-10" />
+                         <span>Shipped</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                         <span className="h-4 w-4 rounded-full bg-muted ring-4 ring-background z-10" />
+                         <span>Out for Delivery</span>
+                       </div>
+                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                         <span className="h-4 w-4 rounded-full bg-muted ring-4 ring-background z-10" />
+                         <span>Delivered</span>
+                       </div>
+                     </div>
                    </div>
-                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                     <span className="h-4 w-4 rounded-full bg-muted ring-4 ring-background z-10" />
-                     <span>Out for Delivery</span>
-                   </div>
-                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                     <span className="h-4 w-4 rounded-full bg-muted ring-4 ring-background z-10" />
-                     <span>Delivered</span>
-                   </div>
-                 </div>
-               </div>
 
-               <div className="mt-8 bg-muted/30 p-4 rounded-lg flex items-start gap-4">
-                 <Truck size={20} className="text-muted-foreground mt-0.5 shrink-0" />
-                 <div>
-                   <p className="text-sm font-medium">Estimated Delivery: Tomorrow by 8 PM</p>
-                   <p className="text-xs text-muted-foreground mt-1">FedEx Tracking: 39182390182301</p>
-                 </div>
-               </div>
-            </div>
+                   <div className="mt-8 bg-muted/30 p-4 rounded-lg flex items-start gap-4">
+                     <Truck size={20} className="text-muted-foreground mt-0.5 shrink-0" />
+                     <div>
+                       <p className="text-sm font-medium">Estimated Delivery: Tomorrow by 8 PM</p>
+                       <p className="text-xs text-muted-foreground mt-1">FedEx Tracking: 39182390182301</p>
+                     </div>
+                   </div>
+                </div>
 
-            {orders?.map((order: any) => (
+                {orders?.map((order: any) => (
               <div key={order.id} className="vx-card p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h3 className="font-medium text-lg">Order #{order.id.substring(0,8).toUpperCase()}</h3>
@@ -149,12 +173,26 @@ export default function BillingPage() {
                 </div>
               </div>
             ))}
+              </>
+            )}
           </div>
         )}
 
         {tab === "invoices" && (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {orders?.map((order: any) => (
+            {ordersLoading ? (
+              <div className="space-y-4">
+                <div className="h-16 w-full bg-muted rounded-xl animate-pulse"></div>
+                <div className="h-16 w-full bg-muted rounded-xl animate-pulse"></div>
+              </div>
+            ) : ordersError ? (
+              <div className="p-6 text-center text-destructive">
+                <p>Failed to load invoices.</p>
+                <button onClick={() => mutateOrders()} className="btn btn-outline text-xs mt-2">Try again</button>
+              </div>
+            ) : !orders || orders.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">No invoices found.</div>
+            ) : orders?.map((order: any) => (
               <div key={order.id} className="vx-card p-4 flex justify-between items-center group">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">

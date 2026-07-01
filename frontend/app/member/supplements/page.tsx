@@ -7,10 +7,11 @@ import { toast } from "sonner";
 const supabase = createClient();
 
 export default function SupplementsPage() {
-  const { data, mutate } = useSWR("supplements", async () => {
+  const { data, error, isLoading, mutate } = useSWR("supplements", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-    const { data: subs } = await supabase.from("supplement_subscriptions").select("*").eq("member_id", user.id).order("created_at", { ascending: false });
+    const { data: subs, error } = await supabase.from("supplement_subscriptions").select("*").eq("member_id", user.id).order("created_at", { ascending: false });
+    if (error) throw error;
     return { userId: user.id, subs: subs || [] };
   });
 
@@ -28,7 +29,25 @@ export default function SupplementsPage() {
     mutate();
   }
 
-  if (!data) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
+  if (isLoading) return (
+    <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="h-10 w-48 bg-muted rounded animate-pulse mb-2"></div>
+      <div className="h-4 w-64 bg-muted rounded animate-pulse mb-8"></div>
+      <div className="space-y-4">
+        <div className="h-20 bg-muted/50 rounded-xl animate-pulse"></div>
+        <div className="h-20 bg-muted/50 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="mx-auto max-w-3xl px-6 py-10 text-center">
+      <p className="text-destructive font-medium">Failed to load subscriptions.</p>
+      <button onClick={() => mutate()} className="mt-4 btn btn-outline text-xs">Try again</button>
+    </div>
+  );
+
+  if (!data) return null;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10" data-testid="member-supplements-page">

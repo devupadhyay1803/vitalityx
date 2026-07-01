@@ -20,6 +20,8 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [lastReadTimestamps, setLastReadTimestamps] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   async function loadAll() {
@@ -111,6 +113,9 @@ export default function MessagesPage() {
       }
     } catch (e) {
       console.warn("Failed to load message conversations:", e);
+      setError(true);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -221,17 +226,30 @@ export default function MessagesPage() {
   return (
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl gap-6 px-6 py-6" data-testid="member-messages-page">
       {/* Left panel: thread list */}
-      <div className="w-80 shrink-0 border-r border-border pr-4 flex flex-col h-full overflow-y-auto">
-        <h2 className="font-display text-xl mb-4">Conversations</h2>
-        <div className="space-y-1.5 flex-1 animate-in fade-in duration-200">
-          {activePartners.map((p) => {
-            const isActive = selectedPartner?.id === p.id;
+      <div className="w-1/3 border-r border-border pr-6 flex flex-col">
+        <div className="flex items-center gap-2 mb-6">
+          <MessageSquare className="text-[var(--vx-jade)]" size={24} />
+          <h1 className="font-display text-2xl font-medium">Messages</h1>
+        </div>
+        <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+          {isLoading ? (
+            <div className="space-y-3">
+              <div className="h-16 w-full bg-muted rounded-xl animate-pulse"></div>
+              <div className="h-16 w-full bg-muted rounded-xl animate-pulse"></div>
+            </div>
+          ) : error ? (
+            <div className="p-6 text-center text-destructive">
+              <p className="text-sm">Failed to load conversations.</p>
+              <button onClick={() => { setError(false); setIsLoading(true); loadAll(); }} className="btn btn-outline text-xs mt-2">Try again</button>
+            </div>
+          ) : activePartners.map((p) => {
+            const isSelected = selectedPartner?.id === p.id;
             return (
               <button
                 key={p.id}
                 onClick={() => setSelectedPartner(p)}
                 className={`w-full flex items-center gap-3 rounded-xl p-3 text-left transition ${
-                  isActive ? "bg-muted border border-border" : "hover:bg-muted/50 border border-transparent"
+                  isSelected ? "bg-muted border border-border" : "hover:bg-muted/50 border border-transparent"
                 }`}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--vx-ink)] text-sm font-semibold text-white">
@@ -252,7 +270,7 @@ export default function MessagesPage() {
               </button>
             );
           })}
-          {activePartners.length === 0 && (
+          {!isLoading && !error && activePartners.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-6">No conversations yet.</p>
           )}
         </div>

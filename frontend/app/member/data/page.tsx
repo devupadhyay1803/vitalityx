@@ -84,12 +84,14 @@ export default function MyDataPage() {
 
 function BiomarkersTable() {
   const { user } = useUser();
-  const { data } = useSWR(["biomarkers", user.id], async () => {
-    const { data } = await supabase.from("biomarkers").select("*").eq("member_id", user.id).order("tested_at", { ascending: false });
+  const { data, error, isLoading, mutate } = useSWR(["biomarkers", user.id], async () => {
+    const { data, error } = await supabase.from("biomarkers").select("*").eq("member_id", user.id).order("tested_at", { ascending: false });
+    if (error) throw error;
     return data || [];
   });
-  if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!data.length) return <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No biomarkers yet.</p>;
+  if (isLoading) return <div className="h-32 w-full bg-muted rounded-xl animate-pulse"></div>;
+  if (error) return <div className="text-center p-6 text-destructive"><p>Failed to load biomarkers.</p><button onClick={() => mutate()} className="btn btn-outline text-xs mt-2">Try again</button></div>;
+  if (!data || !data.length) return <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No biomarkers yet.</div>;
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full" data-testid="biomarkers-table">
@@ -113,12 +115,14 @@ function BiomarkersTable() {
 }
 function GeneticsList() {
   const { user } = useUser();
-  const { data } = useSWR(["genetics", user.id], async () => {
-    const { data } = await supabase.from("genetic_traits").select("*").eq("member_id", user.id);
+  const { data, error, isLoading, mutate } = useSWR(["genetics", user.id], async () => {
+    const { data, error } = await supabase.from("genetic_traits").select("*").eq("member_id", user.id);
+    if (error) throw error;
     return data || [];
   });
-  if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!data.length) return <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No genetic data uploaded. <a href="/gina" className="underline">Learn about GINA protection.</a></p>;
+  if (isLoading) return <div className="space-y-3"><div className="h-24 w-full bg-muted rounded-xl animate-pulse"></div><div className="h-24 w-full bg-muted rounded-xl animate-pulse"></div></div>;
+  if (error) return <div className="text-center p-6 text-destructive"><p>Failed to load genetics.</p><button onClick={() => mutate()} className="btn btn-outline text-xs mt-2">Try again</button></div>;
+  if (!data || !data.length) return <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No genetic data uploaded. <a href="/gina" className="underline">Learn about GINA protection.</a></div>;
   return (
     <ul className="space-y-3" data-testid="genetics-list">
       {data.map((g: any) => (
@@ -133,12 +137,14 @@ function GeneticsList() {
 }
 function BioAgeTrend() {
   const { user } = useUser();
-  const { data } = useSWR(["bioage", user.id], async () => {
-    const { data } = await supabase.from("biological_age_records").select("*").eq("member_id", user.id).order("calculated_at", { ascending: true });
+  const { data, error, isLoading, mutate } = useSWR(["bioage", user.id], async () => {
+    const { data, error } = await supabase.from("biological_age_records").select("*").eq("member_id", user.id).order("calculated_at", { ascending: true });
+    if (error) throw error;
     return data || [];
   });
-  if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!data.length) return <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">First lab pending.</p>;
+  if (isLoading) return <div className="h-32 w-full max-w-sm bg-muted rounded-xl animate-pulse"></div>;
+  if (error) return <div className="text-center p-6 text-destructive"><p>Failed to load bio age data.</p><button onClick={() => mutate()} className="btn btn-outline text-xs mt-2">Try again</button></div>;
+  if (!data || !data.length) return <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">First lab pending.</div>;
   const latest = data[data.length-1];
   return (
     <div className="vx-card p-6" data-testid="bio-age-card">

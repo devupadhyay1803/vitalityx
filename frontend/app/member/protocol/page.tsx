@@ -9,21 +9,38 @@ const supabase = createClient();
 
 export default function ProtocolPage() {
   const [openId, setOpenId] = useState<string | null>(null);
-  const { data, mutate } = useSWR("protocol-full", async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { userId: "", items: [], doneToday: new Set<string>() };
-      const [{ data: items }, { data: comps }] = await Promise.all([
-        supabase.from("protocol_items").select("*").eq("member_id", user.id).eq("active", true).order("created_at"),
-        supabase.from("protocol_completions").select("item_id, completed_at").eq("member_id", user.id).gte("completed_at", new Date(new Date().toDateString()).toISOString()),
-      ]);
-      return { userId: user.id, items: items || [], doneToday: new Set<string>((comps || []).map((c: any) => c.item_id)) };
-    } catch (e) {
-      console.warn("Failed to fetch protocol data:", e);
-      return { userId: "", items: [], doneToday: new Set<string>() };
-    }
+  const { data, error, isLoading, mutate } = useSWR("protocol-full", async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { userId: "", items: [], doneToday: new Set<string>() };
+    const [{ data: items, error: err1 }, { data: comps, error: err2 }] = await Promise.all([
+      supabase.from("protocol_items").select("*").eq("member_id", user.id).eq("active", true).order("created_at"),
+      supabase.from("protocol_completions").select("item_id, completed_at").eq("member_id", user.id).gte("completed_at", new Date(new Date().toDateString()).toISOString()),
+    ]);
+    if (err1) throw err1;
+    if (err2) throw err2;
+    return { userId: user.id, items: items || [], doneToday: new Set<string>((comps || []).map((c: any) => c.item_id)) };
   });
-  if (!data || !data.userId) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
+
+  if (isLoading) return (
+    <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="h-10 w-48 bg-muted rounded animate-pulse mb-2"></div>
+      <div className="h-4 w-64 bg-muted rounded animate-pulse mb-8"></div>
+      <div className="space-y-3">
+        <div className="h-16 bg-muted/50 rounded-xl animate-pulse"></div>
+        <div className="h-16 bg-muted/50 rounded-xl animate-pulse"></div>
+        <div className="h-16 bg-muted/50 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="mx-auto max-w-3xl px-6 py-10 text-center">
+      <p className="text-destructive font-medium">Failed to load protocol.</p>
+      <button onClick={() => mutate()} className="mt-4 btn btn-outline text-xs">Try again</button>
+    </div>
+  );
+
+  if (!data || !data.userId) return null;
 
   async function toggle(id: string) {
     if (!data) return;

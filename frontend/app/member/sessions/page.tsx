@@ -16,20 +16,41 @@ export default function SessionsPage() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Record<string, any> | null>(null);
 
-  const { data, mutate } = useSWR("appointments", async () => {
+  const { data, error, isLoading, mutate } = useSWR("appointments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     const { data: cr } = await supabase.from("client_records").select("assigned_coach_id").eq("member_id", user.id).maybeSingle();
-    const { data: appointments } = await supabase
+    const { data: appointments, error } = await supabase
       .from("appointments")
       .select("*, coach:profiles!appointments_staff_id_fkey(full_name)")
       .eq("member_id", user.id)
       .order("scheduled_start", { ascending: true });
     
+    if (error) throw error;
     return { userId: user.id, coachId: cr?.assigned_coach_id, appointments: appointments || [] };
   });
 
-  if (!data) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
+  if (isLoading) return (
+    <div className="mx-auto max-w-4xl px-6 py-10">
+      <div className="flex justify-between items-center mb-10">
+        <div className="h-10 w-48 bg-muted rounded animate-pulse"></div>
+        <div className="h-10 w-32 bg-muted rounded animate-pulse"></div>
+      </div>
+      <div className="space-y-4">
+        <div className="h-28 bg-muted/50 rounded-xl animate-pulse"></div>
+        <div className="h-28 bg-muted/50 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="mx-auto max-w-4xl px-6 py-10 text-center">
+      <p className="text-destructive font-medium">Failed to load sessions.</p>
+      <button onClick={() => mutate()} className="mt-4 btn btn-outline text-xs">Try again</button>
+    </div>
+  );
+
+  if (!data) return null;
 
   const upcoming = data.appointments.filter((s: Record<string, any>) => 
     new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed" && s.status !== "No Show"

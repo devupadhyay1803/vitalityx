@@ -14,8 +14,9 @@ export default function NotesDocsPage({ params }: { params: Promise<{ id: string
   const { id } = use(params);
   
   // Using SWR to load client record (where we will store the notes in a private_notes JSON array)
-  const { data: record, mutate } = useSWR(`client-notes-${id}`, async () => {
-    const { data } = await supabase.from("client_records").select("*").eq("member_id", id).single();
+  const { data: record, error, isLoading, mutate } = useSWR(`client-notes-${id}`, async () => {
+    const { data, error } = await supabase.from("client_records").select("*").eq("member_id", id).single();
+    if (error) throw error;
     return data;
   });
 
@@ -112,16 +113,29 @@ export default function NotesDocsPage({ params }: { params: Promise<{ id: string
           </div>
 
           <div className="space-y-4">
-            {privateNotes.map((note: any) => (
-              <div key={note.id} className="vx-card p-4 bg-muted/20 border-l-4 border-l-amber-500">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-mono text-muted-foreground">{new Date(note.created_at).toLocaleString()}</span>
-                  <button onClick={() => deleteNote(note.id)} className="text-muted-foreground hover:text-red-500 transition"><Trash2 size={14} /></button>
-                </div>
-                <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+            {isLoading ? (
+              <div className="space-y-3">
+                <div className="h-24 w-full bg-muted rounded-xl animate-pulse"></div>
+                <div className="h-24 w-full bg-muted rounded-xl animate-pulse"></div>
               </div>
-            ))}
-            {privateNotes.length === 0 && <p className="text-sm text-muted-foreground">No notes yet.</p>}
+            ) : error ? (
+              <div className="p-4 text-center text-destructive">
+                <p className="text-sm">Failed to load notes.</p>
+                <button onClick={() => mutate()} className="mt-2 btn btn-outline text-xs">Try again</button>
+              </div>
+            ) : privateNotes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No notes yet.</p>
+            ) : (
+              privateNotes.map((note: any) => (
+                <div key={note.id} className="vx-card p-4 bg-muted/20 border-l-4 border-l-amber-500">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs font-mono text-muted-foreground">{new Date(note.created_at).toLocaleString()}</span>
+                    <button onClick={() => deleteNote(note.id)} className="text-muted-foreground hover:text-red-500 transition"><Trash2 size={14} /></button>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

@@ -96,3 +96,4 @@ frontend/.next/dev/cache/turbopack/f37fad94/00000532.sst
 credentials.json
 *.key
 .credentials
+.env*

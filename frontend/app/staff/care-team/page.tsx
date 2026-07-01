@@ -19,7 +19,7 @@ export default function StaffCareTeamManagement() {
   const [selectedRole, setSelectedRole] = useState(ROLES[0]);
 
   // Fetch Members
-  const { data: members, isLoading: loadingMembers } = useSWR("care-team-members", async () => {
+  const { data: members, error: membersError, isLoading: loadingMembers, mutate: mutateMembers } = useSWR("care-team-members", async () => {
     const { data } = await supabase
       .from("profiles")
       .select(`
@@ -123,6 +123,11 @@ export default function StaffCareTeamManagement() {
       <div className="vx-card overflow-hidden">
         {loadingMembers ? (
           <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-muted-foreground" /></div>
+        ) : membersError ? (
+          <div className="p-8 text-center">
+            <p className="text-destructive text-sm font-medium">Failed to load care team assignments.</p>
+            <button onClick={() => mutateMembers()} className="mt-4 btn btn-outline text-xs">Try again</button>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">

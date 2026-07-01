@@ -11,8 +11,9 @@ const supabase = createClient();
 
 export default function ProtocolBuilder({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { data, mutate } = useSWR(`builder-${id}`, async () => {
-    const { data } = await supabase.from("protocol_items").select("*").eq("member_id", id).order("created_at");
+  const { data, error, isLoading, mutate } = useSWR(`builder-${id}`, async () => {
+    const { data, error } = await supabase.from("protocol_items").select("*").eq("member_id", id).order("created_at");
+    if (error) throw error;
     return data || [];
   });
   const [title, setTitle] = useState("");
@@ -56,14 +57,28 @@ export default function ProtocolBuilder({ params }: { params: Promise<{ id: stri
         <textarea data-testid="builder-why" value={why} onChange={(e) => setWhy(e.target.value)} rows={3} placeholder="Why this is in the plan…" className="vx-input" />
         <button data-testid="builder-add" onClick={add} className="btn btn-primary">Add item</button>
       </div>
-      <ul className="mt-6 space-y-2">
-        {(data || []).filter((i: any) => i.active).map((it: any) => (
-          <li key={it.id} className="vx-card flex items-center justify-between p-4">
-            <div><p className="font-medium">{it.title}</p>{it.why_text && <p className="mt-1 text-xs text-muted-foreground">{it.why_text}</p>}</div>
-            <button data-testid={`builder-remove-${it.id}`} onClick={() => remove(it.id)} className="rounded-full p-2 text-destructive hover:bg-destructive/10"><Trash2 size={16} /></button>
-          </li>
-        ))}
-      </ul>
+      {isLoading ? (
+        <div className="mt-6 space-y-2">
+          <div className="h-20 w-full bg-muted rounded-xl animate-pulse"></div>
+          <div className="h-20 w-full bg-muted rounded-xl animate-pulse"></div>
+        </div>
+      ) : error ? (
+        <div className="mt-6 p-4 text-center">
+          <p className="text-destructive text-sm">Failed to load protocol.</p>
+          <button onClick={() => mutate()} className="mt-2 btn btn-outline text-xs">Try again</button>
+        </div>
+      ) : (
+        <ul className="mt-6 space-y-2">
+          {(data || []).filter((i: any) => i.active).length === 0 ? (
+            <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">No active protocol items.</p>
+          ) : (data || []).filter((i: any) => i.active).map((it: any) => (
+            <li key={it.id} className="vx-card flex items-center justify-between p-4">
+              <div><p className="font-medium">{it.title}</p>{it.why_text && <p className="mt-1 text-xs text-muted-foreground">{it.why_text}</p>}</div>
+              <button data-testid={`builder-remove-${it.id}`} onClick={() => remove(it.id)} className="rounded-full p-2 text-destructive hover:bg-destructive/10"><Trash2 size={16} /></button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

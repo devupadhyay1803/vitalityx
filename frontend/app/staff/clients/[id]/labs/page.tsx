@@ -9,8 +9,9 @@ const supabase = createClient();
 
 export default function LabsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { data, mutate } = useSWR(`labs-${id}`, async () => {
-    const { data: labs } = await supabase.from("lab_results").select("*").eq("member_id", id).order("tested_at", { ascending: false });
+  const { data, error, isLoading, mutate } = useSWR(`labs-${id}`, async () => {
+    const { data: labs, error } = await supabase.from("lab_results").select("*").eq("member_id", id).order("tested_at", { ascending: false });
+    if (error) throw error;
     return labs || [];
   });
   const [bioAge, setBioAge] = useState("");
@@ -77,13 +78,24 @@ export default function LabsPage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       <h2 className="mt-10 font-display text-xl">Recent labs</h2>
-      <ul className="mt-3 space-y-2">
-        {data?.map((l: any) => (
-          <li key={l.id} className="vx-card p-3 text-sm flex justify-between">
-            <span>Tested {l.tested_at} · Bio age {l.biological_age ?? "—"}</span>
-          </li>
-        ))}
-      </ul>
+      {isLoading ? (
+        <div className="mt-3 h-16 w-full bg-muted rounded-xl animate-pulse"></div>
+      ) : error ? (
+        <div className="mt-3 p-4 text-center">
+          <p className="text-destructive text-sm">Failed to load labs.</p>
+          <button onClick={() => mutate()} className="mt-2 btn btn-outline text-xs">Try again</button>
+        </div>
+      ) : !data || data.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground rounded-lg border border-dashed p-4 text-center">No labs recorded yet.</p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {data.map((l: any) => (
+            <li key={l.id} className="vx-card p-3 text-sm flex justify-between">
+              <span>Tested {l.tested_at} · Bio age {l.biological_age ?? "—"}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

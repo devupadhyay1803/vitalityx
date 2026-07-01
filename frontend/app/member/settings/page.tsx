@@ -10,13 +10,23 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setEmail(user.email || "");
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-      setProfile(data);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        setEmail(user.email || "");
+        const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+        if (error) throw error;
+        setProfile(data);
+      } catch (err) {
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, []);
 
@@ -48,7 +58,24 @@ export default function SettingsPage() {
     setNewPwd("");
   }
 
-  if (!profile) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
+  if (isLoading) return (
+    <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="h-10 w-48 bg-muted rounded animate-pulse mb-8"></div>
+      <div className="space-y-6">
+        <div className="h-64 bg-muted/50 rounded-xl animate-pulse"></div>
+        <div className="h-40 bg-muted/50 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="mx-auto max-w-2xl px-6 py-10 text-center">
+      <p className="text-destructive font-medium">Failed to load settings.</p>
+      <button onClick={() => window.location.reload()} className="mt-4 btn btn-outline text-xs">Reload page</button>
+    </div>
+  );
+
+  if (!profile) return null;
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10" data-testid="member-settings-page">

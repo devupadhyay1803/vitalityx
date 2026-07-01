@@ -11,11 +11,12 @@ export default function CheckInPage() {
   const [sleep, setSleep] = useState(7);
   const [energy, setEnergy] = useState(7);
   const [mood, setMood] = useState(7);
-  const { data, mutate } = useSWR("checkins", async () => {
+  const { data, error, isLoading, mutate } = useSWR("checkins", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
     const since = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
-    const { data } = await supabase.from("daily_checkins").select("*").eq("member_id", user.id).gte("checked_in_at", since).order("checked_in_at");
+    const { data, error } = await supabase.from("daily_checkins").select("*").eq("member_id", user.id).gte("checked_in_at", since).order("checked_in_at");
+    if (error) throw error;
     return data || [];
   });
 
@@ -48,7 +49,20 @@ export default function CheckInPage() {
       </div>
 
       <h2 className="mt-10 font-display text-xl">Last 7 days</h2>
-      {!data || data.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No check-ins yet this week.</p> : (
+      {isLoading ? (
+        <div className="mt-3 h-40 vx-card p-3 flex items-center justify-center">
+          <p className="text-sm text-muted-foreground animate-pulse">Loading trends...</p>
+        </div>
+      ) : error ? (
+        <div className="mt-3 h-40 vx-card p-3 flex flex-col items-center justify-center">
+          <p className="text-sm text-destructive mb-2">Failed to load check-ins.</p>
+          <button onClick={() => mutate()} className="btn btn-outline text-xs">Try again</button>
+        </div>
+      ) : !data || data.length === 0 ? (
+        <div className="mt-3 h-40 vx-card p-3 flex items-center justify-center">
+          <p className="text-sm text-muted-foreground">No check-ins yet this week.</p>
+        </div>
+      ) : (
         <div className="mt-3 h-40 vx-card p-3">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>

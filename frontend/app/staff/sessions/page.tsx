@@ -12,16 +12,17 @@ const supabase = createClient();
 export default function StaffSessions() {
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Record<string, any> | null>(null);
 
-  const { data: appointments, mutate } = useSWR("staff-appointments", async () => {
+  const { data: appointments, error, isLoading, mutate } = useSWR("staff-appointments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
     
     // As a staff member, fetch all assigned appointments
-    const { data } = await supabase.from("appointments")
+    const { data, error } = await supabase.from("appointments")
       .select("*, member:profiles!appointments_member_id_fkey(full_name, email)")
       .eq("staff_id", user.id)
       .order("scheduled_start", { ascending: true });
       
+    if (error) throw error;
     return data || [];
   });
 
@@ -65,7 +66,24 @@ export default function StaffSessions() {
     mutate();
   }
 
-  if (!appointments) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
+  if (isLoading) return (
+    <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="h-10 w-64 bg-muted rounded animate-pulse mb-8"></div>
+      <div className="space-y-4">
+        <div className="h-32 bg-muted/50 rounded-xl animate-pulse"></div>
+        <div className="h-32 bg-muted/50 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="mx-auto max-w-5xl px-6 py-10 text-center">
+      <p className="text-destructive font-medium">Failed to load appointments.</p>
+      <button onClick={() => mutate()} className="mt-4 btn btn-outline text-xs">Try again</button>
+    </div>
+  );
+
+  if (!appointments) return null;
 
   const today = appointments.filter((s: Record<string, any>) => new Date(s.scheduled_start).toDateString() === new Date().toDateString());
   const upcoming = appointments.filter((s: Record<string, any>) => new Date(s.scheduled_start) > new Date() && new Date(s.scheduled_start).toDateString() !== new Date().toDateString());
