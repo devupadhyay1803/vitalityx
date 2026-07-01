@@ -10,7 +10,7 @@ import { useEffect, useState, useRef } from "react";
 import { NotificationsPopover } from "@/components/portal/notifications-popover";
 import {
   Home, LineChart, ListChecks, CalendarDays, Package, MessageSquare,
-  Activity, Settings, LogOut, Users, FileText, Moon, Sun, ShieldAlert
+  Activity, Settings, LogOut, Users, FileText, Moon, Sun, ShieldAlert, Clock
 } from "lucide-react";
 
 type Nav = { href: string; label: string; icon: React.ComponentType<{ size?: number }>; testId: string };
@@ -25,7 +25,8 @@ const MEMBER_NAV: Nav[] = [
   { href: "/member/messages",    label: "Messages",    icon: MessageSquare,testId: "sidebar-messages" },
   { href: "/member/check-in",    label: "Check-in",    icon: Activity,     testId: "sidebar-checkin" },
   { href: "/member/documents",   label: "Documents",   icon: FileText,     testId: "sidebar-documents" },
-  { href: "/member/billing",     label: "Billing",     icon: Package,      testId: "sidebar-billing" }, // using Package since FileText is Docs
+  { href: "/member/activity",    label: "Activity",    icon: Clock,        testId: "sidebar-activity" },
+  { href: "/member/billing",     label: "Billing",     icon: Package,      testId: "sidebar-billing" },
   { href: "/member/settings",    label: "Settings",    icon: Settings,     testId: "sidebar-settings" },
 ];
 
