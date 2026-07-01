@@ -39,8 +39,10 @@ export default function SessionsPage() {
     new Date(s.scheduled_start) < new Date() || s.status === "Cancelled" || s.status === "Completed"
   ).sort((a: Record<string, any>, b: Record<string, any>) => new Date(b.scheduled_start).getTime() - new Date(a.scheduled_start).getTime());
 
-  async function book(bookingData: Record<string, any>) {
-    const { error, data: newApt } = await supabase.from("appointments").insert({
+ async function book(bookingData: Record<string, any>): Promise<void> {
+  const { error, data: newApt } = await supabase
+    .from("appointments")
+    .insert({
       member_id: data!.userId,
       staff_id: bookingData.staff_id,
       title: bookingData.title,
@@ -48,22 +50,37 @@ export default function SessionsPage() {
       scheduled_start: bookingData.scheduled_start,
       scheduled_end: bookingData.scheduled_end,
       status: "Scheduled",
-    }).select().single();
+    })
+    .select()
+    .single();
 
-    if (error) return toast.error(error.message);
-    
-    fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "booked", appointmentId: newApt.id }) });
-    
-    await logClientAudit("Appointment created", {
-      resourceType: "appointment",
-      resourceId: newApt.id,
-      metadata: { service: bookingData.session_type, scheduled_at: bookingData.scheduled_start, staff_id: bookingData.staff_id }
-    });
-
-    toast.success("Session booked successfully.");
-    setShowBookingModal(false);
-    mutate();
+  if (error) {
+    toast.error(error.message);
+    return;
   }
+
+  await fetch("/api/appointments", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "booked",
+      appointmentId: newApt.id,
+    }),
+  });
+
+  await logClientAudit("Appointment created", {
+    resourceType: "appointment",
+    resourceId: newApt.id,
+    metadata: {
+      service: bookingData.session_type,
+      scheduled_at: bookingData.scheduled_start,
+      staff_id: bookingData.staff_id,
+    },
+  });
+
+  toast.success("Session booked successfully.");
+  setShowBookingModal(false);
+  mutate();
+}
 
   async function cancelAppointment(id: string) {
     const { error } = await supabase
@@ -83,32 +100,47 @@ export default function SessionsPage() {
     mutate();
   }
 
-  async function reschedule(newStart: string, newEnd: string) {
-    if (!rescheduleAppointment) return;
-    const { error } = await supabase
-      .from("appointments")
-      .update({ 
-        scheduled_start: newStart,
-        scheduled_end: newEnd,
-        status: "Rescheduled",
-        updated_at: new Date().toISOString() 
-      })
-      .eq("id", rescheduleAppointment.id);
-      
-    if (error) return toast.error(error.message);
-    
-    fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "rescheduled", appointmentId: rescheduleAppointment.id }) });
-    
-    await logClientAudit("Appointment rescheduled", {
-      resourceType: "appointment",
-      resourceId: rescheduleAppointment.id,
-      metadata: { new_scheduled_at: newStart }
-    });
+  async function reschedule(
+  newStart: string,
+  newEnd: string
+): Promise<void> {
+  if (!rescheduleAppointment) return;
 
-    toast.success("Session rescheduled.");
-    setRescheduleAppointment(null);
-    mutate();
+  const { error } = await supabase
+    .from("appointments")
+    .update({
+      scheduled_start: newStart,
+      scheduled_end: newEnd,
+      status: "Rescheduled",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", rescheduleAppointment.id);
+
+  if (error) {
+    toast.error(error.message);
+    return;
   }
+
+  await fetch("/api/appointments", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "rescheduled",
+      appointmentId: rescheduleAppointment.id,
+    }),
+  });
+
+  await logClientAudit("Appointment rescheduled", {
+    resourceType: "appointment",
+    resourceId: rescheduleAppointment.id,
+    metadata: {
+      new_scheduled_at: newStart,
+    },
+  });
+
+  toast.success("Session rescheduled.");
+  setRescheduleAppointment(null);
+  mutate();
+}
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10" data-testid="member-sessions-page">

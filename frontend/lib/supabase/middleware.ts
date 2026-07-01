@@ -64,17 +64,23 @@ export async function updateSession(request: NextRequest) {
 
     // MFA Enforcement for Staff
     if (isStaff && role !== "Member" && !path.startsWith("/staff/mfa")) {
-      const { data: { aal } } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aal && aal.currentLevel === 'aal1') {
-        const url = request.nextUrl.clone();
-        if (aal.nextLevel === 'aal1') {
-          url.pathname = "/staff/mfa/setup";
-        } else if (aal.nextLevel === 'aal2') {
-          url.pathname = "/staff/mfa/verify";
-        }
-        url.searchParams.set("next", path);
-        return NextResponse.redirect(url);
-      }
+      const { data: assurance } =
+  await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+if (assurance && "currentLevel" in assurance) {
+  if (assurance.currentLevel === "aal1") {
+    const url = request.nextUrl.clone();
+
+    if (assurance.nextLevel === "aal1") {
+      url.pathname = "/staff/mfa/setup";
+    } else if (assurance.nextLevel === "aal2") {
+      url.pathname = "/staff/mfa/verify";
+    }
+
+    url.searchParams.set("next", path);
+    return NextResponse.redirect(url);
+  }
+}
     }
   }
 

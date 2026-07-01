@@ -102,7 +102,7 @@ export default async function OperationsDashboard() {
           <StatCard title="Today's Sessions" value={todaysAppointments} icon={Calendar} trend="3 pending" />
           <StatCard title="Monthly Revenue" value={`$${(monthlyRevenue / 100).toLocaleString()}`} icon={DollarSign} trend="+5% MRR" />
           <StatCard title="Active Subs" value={activeSubscriptions} icon={Package} />
-          <StatCard title="Pending Docs" value={pendingDocuments} icon={FileText} alert={pendingDocuments && pendingDocuments > 10} />
+          <StatCard title="Pending Docs" value={pendingDocuments} icon={FileText} alert={(pendingDocuments ?? 0) > 10} />
           <StatCard title="Notifications Today" value={notificationsSent} icon={Bell} />
           <StatCard title="Audit Events" value={auditEventsToday} icon={Activity} />
           
@@ -153,8 +153,13 @@ export default async function OperationsDashboard() {
                     <div className="flex items-center gap-4">
                       <div className={`w-2 h-2 rounded-full ${apt.status === 'Confirmed' ? 'bg-[var(--vx-jade)]' : apt.status === 'Cancelled' ? 'bg-red-500' : 'bg-amber-500'}`} />
                       <div>
-                        <p className="text-sm font-medium">{apt.member?.full_name || "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">with {apt.staff?.full_name || "Unassigned"}</p>
+                        <p className="text-sm font-medium">
+  {apt.member?.[0]?.full_name || "Unknown"}
+</p>
+
+<p className="text-xs text-muted-foreground">
+  with {apt.staff?.[0]?.full_name || "Unassigned"}
+</p>
                       </div>
                     </div>
                     <div className="text-right">

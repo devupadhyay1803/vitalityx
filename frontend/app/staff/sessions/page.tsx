@@ -54,7 +54,10 @@ export default function StaffSessions() {
       })
       .eq("id", rescheduleAppointment.id);
       
-    if (error) return toast.error(error.message);
+    if (error) {
+  toast.error(error.message);
+  return;
+}
     
     fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "rescheduled", appointmentId: rescheduleAppointment.id }) });
     toast.success("Session rescheduled.");

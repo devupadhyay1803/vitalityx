@@ -55,13 +55,13 @@ async function fetchDashboard() {
 
 export default function MemberDashboard() {
   const { data, error, isLoading, mutate } = useSWR("member-dashboard", fetchDashboard, { revalidateOnFocus: false });
-  const [name, setName] = useState<string>("");
-  useEffect(() => { if (data?.data?.profile?.full_name) setName(data.data.profile.full_name.split(" ")[0]); }, [data]);
+  const name =
+  data?.data?.profile?.full_name?.split(" ")[0] ?? "";
 
   if (isLoading) return <DashboardSkeleton />;
   if (error) return <div className="p-8 text-destructive" data-testid="dashboard-error">Failed to load dashboard: {String(error)}</div>;
   if (!data || !data.user) return null;
-
+  const user = data.user;
   interface DashboardData {
     profile?: { full_name: string };
     protocol_items?: { id: string; title: string }[];
@@ -71,13 +71,17 @@ export default function MemberDashboard() {
     coach?: { full_name: string };
   }
   interface TeamMember {
+  id: string;
+  role: string;
+  staff: {
     id: string;
-    role: string;
-    staff: {
-      full_name: string;
-      staff_profiles?: { profile_photo?: string; credentials?: string }[];
-    };
-  }
+    full_name: string;
+    staff_profiles?: {
+      profile_photo?: string;
+      credentials?: string;
+    }[];
+  }[];
+}
   interface BioRecord {
     chronological_age: number;
     biological_age: number;
@@ -89,9 +93,9 @@ export default function MemberDashboard() {
     calculated_at: string;
   }
 
-  const d = data!.data as DashboardData;
-  const team = data!.team as TeamMember[];
-  const bioHistory = data!.bioHistory as BioRecord[];
+  const d = data.data as DashboardData;
+  const team = data.team as TeamMember[];
+  const bioHistory = data.bioHistory as BioRecord[];
   const items: { id: string; title: string }[] = d?.protocol_items || [];
   const completedToday: string[] = d?.completions_today || [];
   const doneCount = items.filter((i) => completedToday.includes(i.id)).length;
@@ -102,20 +106,33 @@ export default function MemberDashboard() {
   const completion7 = items.length ? Math.round((d?.completions_7d || 0) / (items.length * 7) * 100) : 0;
 
   async function toggle(itemId: string) {
-    const already = completedToday.includes(itemId);
-    if (already) {
-      await supabase
-        .from("protocol_completions")
-        .delete()
-        .eq("item_id", itemId)
-        .eq("member_id", data!.user.id)
-        .gte("completed_at", new Date(new Date().toDateString()).toISOString());
-    } else {
-      const { error } = await supabase.from("protocol_completions").insert({ item_id: itemId, member_id: data!.user.id });
-      if (error) toast.error(error.message);
+  const already = completedToday.includes(itemId);
+
+  if (already) {
+    await supabase
+      .from("protocol_completions")
+      .delete()
+      .eq("item_id", itemId)
+      .eq("member_id", data!.user!.id)
+      .gte(
+        "completed_at",
+        new Date(new Date().toDateString()).toISOString()
+      );
+  } else {
+    const { error } = await supabase
+      .from("protocol_completions")
+      .insert({
+        item_id: itemId,
+        member_id: data!.user!.id,
+      });
+
+    if (error) {
+      toast.error(error.message);
     }
-    mutate();
   }
+
+  mutate();
+}
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10" data-testid="member-dashboard">
@@ -273,8 +290,9 @@ export default function MemberDashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {team.map((a: TeamMember) => {
-              const staff = a.staff;
-              const profile = staff.staff_profiles?.[0] || {};
+              const staff = a.staff?.[0];
+                if (!staff) return null;
+                const profile = staff.staff_profiles?.[0] || {};
               return (
                 <Link href="/member/team" key={a.id} className="vx-card p-4 flex items-center gap-4 hover:border-[var(--vx-jade)]/30 transition-colors group">
                   <div className="w-12 h-12 rounded-full border-2 border-muted bg-muted overflow-hidden relative shadow-sm shrink-0">
