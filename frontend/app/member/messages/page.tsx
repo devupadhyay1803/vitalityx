@@ -212,8 +212,14 @@ export default function MessagesPage() {
     };
   });
 
+  const [search, setSearch] = useState("");
+
   const activePartners = enrichedPartners.filter(p => p.hasMessages);
   const inactivePartners = enrichedPartners.filter(p => !p.hasMessages);
+
+  const filteredActivePartners = activePartners.filter(p => 
+    !search || (p.full_name || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   const selectedThreadMessages = selectedPartner
     ? messages.filter(
@@ -227,10 +233,24 @@ export default function MessagesPage() {
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl gap-6 px-6 py-6" data-testid="member-messages-page">
       {/* Left panel: thread list */}
       <div className="w-1/3 border-r border-border pr-6 flex flex-col">
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-4">
           <MessageSquare className="text-[var(--vx-jade)]" size={24} />
           <h1 className="font-display text-2xl font-medium">Messages</h1>
         </div>
+        
+        <div className="relative mb-4">
+          <input 
+            type="text"
+            placeholder="Search conversations..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="vx-input w-full text-sm h-9 pl-9"
+          />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
           {isLoading ? (
             <div className="space-y-3">
@@ -242,7 +262,7 @@ export default function MessagesPage() {
               <p className="text-sm">Failed to load conversations.</p>
               <button onClick={() => { setError(false); setIsLoading(true); loadAll(); }} className="btn btn-outline text-xs mt-2">Try again</button>
             </div>
-          ) : activePartners.map((p) => {
+          ) : filteredActivePartners.map((p) => {
             const isSelected = selectedPartner?.id === p.id;
             return (
               <button
@@ -270,6 +290,9 @@ export default function MessagesPage() {
               </button>
             );
           })}
+          {!isLoading && !error && activePartners.length > 0 && filteredActivePartners.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">No matching conversations.</p>
+          )}
           {!isLoading && !error && activePartners.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-6">No conversations yet.</p>
           )}

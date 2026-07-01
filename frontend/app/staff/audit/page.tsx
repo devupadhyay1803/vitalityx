@@ -88,11 +88,18 @@ export default function StaffAuditPage() {
             <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Loading audit logs...</td>
+                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground animate-pulse">Loading audit logs...</td>
                 </tr>
               ) : filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No logs found.</td>
+                  <td colSpan={5} className="px-4 py-12 text-center">
+                    <p className="text-muted-foreground">No logs match your filters.</p>
+                    {(search || actionFilter !== "All") && (
+                      <button onClick={() => { setSearch(""); setActionFilter("All"); }} className="mt-2 text-sm text-[var(--vx-ink)] hover:underline">
+                        Clear filters
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ) : (
                 filteredLogs.map((log: any) => (

@@ -1,16 +1,21 @@
 "use client";
 import useSWR from "swr";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateTime } from "@/lib/utils";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { RescheduleModal } from "@/components/portal/RescheduleModal";
+import { Search, X, Filter } from "lucide-react";
 
 const supabase = createClient();
 
+type FilterOption = "All" | "Today" | "Upcoming" | "Past" | "Cancelled";
+
 export default function StaffSessions() {
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Record<string, any> | null>(null);
+  const [q, setQ] = useState("");
+  const [filterBy, setFilterBy] = useState<FilterOption>("All");
 
   const { data: appointments, error, isLoading, mutate } = useSWR("staff-appointments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -56,15 +61,39 @@ export default function StaffSessions() {
       .eq("id", rescheduleAppointment.id);
       
     if (error) {
-  toast.error(error.message);
-  return;
-}
+      toast.error(error.message);
+      return;
+    }
     
     fetch("/api/appointments", { method: "POST", body: JSON.stringify({ action: "rescheduled", appointmentId: rescheduleAppointment.id }) });
     toast.success("Session rescheduled.");
     setRescheduleAppointment(null);
     mutate();
   }
+
+  const filteredSessions = useMemo(() => {
+    return (appointments || []).filter((s: any) => {
+      // 1. Search matching
+      const matchesSearch = !q || 
+        (s.title || "").toLowerCase().includes(q.toLowerCase()) || 
+        (s.member?.full_name || "").toLowerCase().includes(q.toLowerCase());
+        
+      if (!matchesSearch) return false;
+
+      // 2. Filter logic
+      const isToday = new Date(s.scheduled_start).toDateString() === new Date().toDateString();
+      const isUpcoming = new Date(s.scheduled_start) > new Date() && !isToday;
+      const isPast = new Date(s.scheduled_start) < new Date() && !isToday;
+
+      switch(filterBy) {
+        case "Today": return isToday && s.status !== "Cancelled";
+        case "Upcoming": return isUpcoming && s.status !== "Cancelled";
+        case "Past": return isPast && s.status !== "Cancelled";
+        case "Cancelled": return s.status === "Cancelled";
+        case "All": default: return true;
+      }
+    });
+  }, [appointments, q, filterBy]);
 
   if (isLoading) return (
     <div className="mx-auto max-w-5xl px-6 py-10">
@@ -85,28 +114,64 @@ export default function StaffSessions() {
 
   if (!appointments) return null;
 
-  const today = appointments.filter((s: Record<string, any>) => new Date(s.scheduled_start).toDateString() === new Date().toDateString());
-  const upcoming = appointments.filter((s: Record<string, any>) => new Date(s.scheduled_start) > new Date() && new Date(s.scheduled_start).toDateString() !== new Date().toDateString());
-
   return (
     <div className="mx-auto max-w-5xl px-6 py-10" data-testid="staff-sessions-page">
       <h1 className="font-display text-4xl font-medium">Session Management</h1>
       
-      <div className="mt-8">
-        <h2 className="font-display text-xl mb-4">Today's Appointments</h2>
-        <div className="space-y-4">
-          {today.length === 0 ? <p className="text-sm text-muted-foreground">No appointments scheduled for today.</p> : 
-            today.map((s: Record<string, any>) => <StaffAppointmentCard key={s.id} appointment={s} onUpdateStatus={updateStatus} onUpdateField={updateField} onReschedule={() => setRescheduleAppointment(s)} />)
-          }
+      <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between bg-card border border-border p-4 rounded-xl">
+        <div className="relative w-full sm:w-96 flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <input 
+            value={q} 
+            onChange={(e) => setQ(e.target.value)} 
+            placeholder="Search sessions by title or member name…" 
+            className="vx-input pl-10 pr-10 w-full" 
+          />
+          {q && (
+            <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter size={16} className="text-muted-foreground" />
+          <select 
+            value={filterBy} 
+            onChange={(e) => setFilterBy(e.target.value as FilterOption)}
+            className="vx-input appearance-none w-full sm:w-48"
+          >
+            <option value="All">All Sessions</option>
+            <option value="Today">Today</option>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Past">Past</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
         </div>
       </div>
-
-      <div className="mt-12">
-        <h2 className="font-display text-xl mb-4">Upcoming</h2>
+      
+      <div className="mt-8">
         <div className="space-y-4">
-          {upcoming.length === 0 ? <p className="text-sm text-muted-foreground">No upcoming appointments.</p> : 
-            upcoming.map((s: Record<string, any>) => <StaffAppointmentCard key={s.id} appointment={s} onUpdateStatus={updateStatus} onUpdateField={updateField} onReschedule={() => setRescheduleAppointment(s)} />)
-          }
+          {filteredSessions.length === 0 ? (
+            <div className="p-12 text-center border border-dashed border-border rounded-xl">
+               <p className="text-muted-foreground">No sessions match your filters.</p>
+               {(q || filterBy !== "All") && (
+                 <button onClick={() => { setQ(""); setFilterBy("All"); }} className="mt-2 text-sm text-[var(--vx-ink)] hover:underline">
+                   Clear filters
+                 </button>
+               )}
+            </div>
+          ) : (
+            filteredSessions.map((s: Record<string, any>) => (
+              <StaffAppointmentCard 
+                key={s.id} 
+                appointment={s} 
+                onUpdateStatus={updateStatus} 
+                onUpdateField={updateField} 
+                onReschedule={() => setRescheduleAppointment(s)} 
+              />
+            ))
+          )}
         </div>
       </div>
       

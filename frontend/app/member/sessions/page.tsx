@@ -1,20 +1,25 @@
 "use client";
 import useSWR from "swr";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateTime } from "@/lib/utils";
 import { toast } from "sonner";
 import { BookingModal } from "@/components/portal/BookingModal";
 import { RescheduleModal } from "@/components/portal/RescheduleModal";
-import { Video, MapPin, Clock, FileText } from "lucide-react";
+import { Video, MapPin, Clock, FileText, Search, Filter, X } from "lucide-react";
 import { logClientAudit } from "@/lib/audit-client";
 import { format } from "date-fns";
 
 const supabase = createClient();
 
+type FilterOption = "All" | "Upcoming" | "Past" | "Cancelled";
+
 export default function SessionsPage() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Record<string, any> | null>(null);
+  
+  const [q, setQ] = useState("");
+  const [filterBy, setFilterBy] = useState<FilterOption>("All");
 
   const { data, error, isLoading, mutate } = useSWR("appointments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -29,6 +34,39 @@ export default function SessionsPage() {
     if (error) throw error;
     return { userId: user.id, coachId: cr?.assigned_coach_id, appointments: appointments || [] };
   });
+
+  const filteredAppointments = useMemo(() => {
+    if (!data) return [];
+    
+    return data.appointments.filter((s: Record<string, any>) => {
+      // 1. Search matching
+      const matchesSearch = !q || 
+        (s.title || "").toLowerCase().includes(q.toLowerCase()) || 
+        (s.coach?.full_name || "").toLowerCase().includes(q.toLowerCase());
+        
+      if (!matchesSearch) return false;
+
+      // 2. Filter logic
+      const isUpcoming = new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed" && s.status !== "No Show";
+      const isPast = new Date(s.scheduled_start) < new Date() || s.status === "Completed" || s.status === "No Show";
+
+      switch(filterBy) {
+        case "Upcoming": return isUpcoming;
+        case "Past": return isPast && s.status !== "Cancelled";
+        case "Cancelled": return s.status === "Cancelled";
+        case "All": default: return true;
+      }
+    });
+  }, [data, q, filterBy]);
+
+  // Separate upcoming and past for categorized views
+  const upcoming = filteredAppointments.filter((s: Record<string, any>) => 
+    new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed" && s.status !== "No Show"
+  );
+  
+  const past = filteredAppointments.filter((s: Record<string, any>) => 
+    new Date(s.scheduled_start) < new Date() || s.status === "Cancelled" || s.status === "Completed" || s.status === "No Show"
+  ).sort((a: Record<string, any>, b: Record<string, any>) => new Date(b.scheduled_start).getTime() - new Date(a.scheduled_start).getTime());
 
   if (isLoading) return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -51,14 +89,6 @@ export default function SessionsPage() {
   );
 
   if (!data) return null;
-
-  const upcoming = data.appointments.filter((s: Record<string, any>) => 
-    new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed" && s.status !== "No Show"
-  );
-  
-  const past = data.appointments.filter((s: Record<string, any>) => 
-    new Date(s.scheduled_start) < new Date() || s.status === "Cancelled" || s.status === "Completed" || s.status === "No Show"
-  ).sort((a: Record<string, any>, b: Record<string, any>) => new Date(b.scheduled_start).getTime() - new Date(a.scheduled_start).getTime());
 
  async function book(bookingData: Record<string, any>): Promise<void> {
   const { error, data: newApt } = await supabase
@@ -169,25 +199,73 @@ export default function SessionsPage() {
         <h1 className="font-display text-4xl font-medium">Sessions</h1>
         <button onClick={() => setShowBookingModal(true)} className="btn btn-primary">+ Book Session</button>
       </div>
-
-      <h2 className="mt-10 font-display text-xl">Upcoming</h2>
-      {upcoming.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No upcoming sessions. Book one to stay on track.</p> :
-        <div className="mt-4 grid gap-4">{upcoming.map((s: Record<string, any>) => (
-          <AppointmentCard 
-            key={s.id} 
-            appointment={s} 
-            onReschedule={() => setRescheduleAppointment(s)} 
-            onCancel={() => cancelAppointment(s.id)}
+      
+      <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between bg-card border border-border p-4 rounded-xl">
+        <div className="relative w-full sm:w-96 flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <input 
+            value={q} 
+            onChange={(e) => setQ(e.target.value)} 
+            placeholder="Search sessions by title or coach…" 
+            className="vx-input pl-10 pr-10 w-full" 
           />
-        ))}</div>
-      }
+          {q && (
+            <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter size={16} className="text-muted-foreground" />
+          <select 
+            value={filterBy} 
+            onChange={(e) => setFilterBy(e.target.value as FilterOption)}
+            className="vx-input appearance-none w-full sm:w-48"
+          >
+            <option value="All">All Sessions</option>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Past">Past</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
 
-      <h2 className="mt-12 font-display text-xl">Past & Cancelled</h2>
-      {past.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No past sessions.</p> :
-        <div className="mt-4 grid gap-4 opacity-75">{past.map((s: Record<string, any>) => (
-          <AppointmentCard key={s.id} appointment={s} readOnly />
-        ))}</div>
-      }
+      {filteredAppointments.length === 0 ? (
+        <div className="mt-8 p-12 text-center border border-dashed border-border rounded-xl">
+           <p className="text-muted-foreground">No sessions match your criteria.</p>
+           {(q || filterBy !== "All") && (
+             <button onClick={() => { setQ(""); setFilterBy("All"); }} className="mt-2 text-sm text-[var(--vx-ink)] hover:underline">
+               Clear filters
+             </button>
+           )}
+        </div>
+      ) : (
+        <>
+          {(filterBy === "All" || filterBy === "Upcoming") && upcoming.length > 0 && (
+            <>
+              <h2 className="mt-10 font-display text-xl">Upcoming</h2>
+              <div className="mt-4 grid gap-4">{upcoming.map((s: Record<string, any>) => (
+                <AppointmentCard 
+                  key={s.id} 
+                  appointment={s} 
+                  onReschedule={() => setRescheduleAppointment(s)} 
+                  onCancel={() => cancelAppointment(s.id)}
+                />
+              ))}</div>
+            </>
+          )}
+
+          {(filterBy === "All" || filterBy === "Past" || filterBy === "Cancelled") && past.length > 0 && (
+            <>
+              <h2 className="mt-12 font-display text-xl">Past & Cancelled</h2>
+              <div className="mt-4 grid gap-4 opacity-75">{past.map((s: Record<string, any>) => (
+                <AppointmentCard key={s.id} appointment={s} readOnly />
+              ))}</div>
+            </>
+          )}
+        </>
+      )}
 
       {showBookingModal && (
         <BookingModal 

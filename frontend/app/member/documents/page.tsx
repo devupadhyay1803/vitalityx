@@ -16,6 +16,7 @@ export default function MemberDocumentsPage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [showUpload, setShowUpload] = useState(false);
   const [replaceDoc, setReplaceDoc] = useState<{ id: string; path: string } | null>(null);
 
@@ -27,8 +28,7 @@ export default function MemberDocumentsPage() {
       const { data, error } = await supabase
         .from("documents")
         .select("*")
-        .eq("member_id", currentUser.id)
-        .order("created_at", { ascending: false });
+        .eq("member_id", currentUser.id);
         
       if (error) {
         console.warn("Error loading member documents:", error);
@@ -47,6 +47,10 @@ export default function MemberDocumentsPage() {
                           doc.file_name.toLowerCase().includes(search.toLowerCase()) ||
                           (doc.description || "").toLowerCase().includes(search.toLowerCase());
     return matchesCategory && matchesSearch;
+  }).sort((a: DocumentType, b: DocumentType) => {
+    const da = new Date(a.created_at || 0).getTime();
+    const db = new Date(b.created_at || 0).getTime();
+    return sortBy === "newest" ? db - da : da - db;
   });
 
   return (
@@ -57,13 +61,13 @@ export default function MemberDocumentsPage() {
           <p className="mt-2 text-muted-foreground">Securely access your labs, protocols, and medical records.</p>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {!showUpload && !replaceDoc && (
             <button 
               onClick={() => setShowUpload(true)} 
               className="btn btn-primary flex items-center gap-2 mr-2"
             >
-              <Plus size={16} /> Upload Document
+              <Plus size={16} /> Upload
             </button>
           )}
           
@@ -71,12 +75,22 @@ export default function MemberDocumentsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
             <input 
               type="text" 
-              placeholder="Search documents..." 
+              placeholder="Search..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="vx-input pl-10 w-full sm:w-64"
+              className="vx-input pl-10 w-full sm:w-48"
             />
           </div>
+          
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value as "newest" | "oldest")}
+            className="vx-input appearance-none w-32 hidden sm:block"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+
           <div className="flex bg-white/5 rounded-lg border border-white/10 p-1">
             <button onClick={() => setViewMode("list")} className={`p-2 rounded-md transition ${viewMode === "list" ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white"}`}>
               <List size={16} />
@@ -123,7 +137,12 @@ export default function MemberDocumentsPage() {
         </div>
       ) : filteredDocs.length === 0 ? (
         <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/5 border-dashed">
-          <p className="text-muted-foreground">No documents found.</p>
+          <p className="text-muted-foreground">No documents match your filters.</p>
+          {(search || activeCategory !== "All") && (
+            <button onClick={() => { setSearch(""); setActiveCategory("All"); }} className="mt-2 text-sm text-[var(--vx-ink)] hover:underline">
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
         <div className={viewMode === "list" ? "flex flex-col gap-4" : "grid sm:grid-cols-2 lg:grid-cols-3 gap-4"}>

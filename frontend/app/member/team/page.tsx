@@ -15,6 +15,9 @@ export default function MemberCareTeamPage() {
   
   const [selectedStaff, setSelectedStaff] = useState<Record<string, any> | null>(null);
   const [bookingCoachId, setBookingCoachId] = useState<string | null>(null);
+  
+  const [q, setQ] = useState("");
+  const [filterRole, setFilterRole] = useState("All");
 
   const { data: assignments, isLoading } = useSWR("care-team-assignments", async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -37,6 +40,25 @@ export default function MemberCareTeamPage() {
       return [];
     }
     return data || [];
+  });
+
+  const uniqueAssignments = (assignments || []).reduce((acc: any[], current: any) => {
+    const staffId = current.staff?.id;
+    if (staffId && !acc.find((item: any) => item.staff?.id === staffId)) {
+      acc.push(current);
+    } else if (!staffId) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+
+  const roles = Array.from(new Set(uniqueAssignments.map((a: any) => a.role)));
+
+  const filteredTeam = uniqueAssignments.filter((a: any) => {
+    const p = a.staff || {};
+    const matchesSearch = !q || (p.full_name || "").toLowerCase().includes(q.toLowerCase());
+    const matchesRole = filterRole === "All" || a.role === filterRole;
+    return matchesSearch && matchesRole;
   });
 
   async function handleBook(bookingData: any) {
@@ -72,12 +94,45 @@ export default function MemberCareTeamPage() {
           helping you achieve your personal health goals.
         </p>
       </div>
+      
+      {uniqueAssignments.length > 0 && (
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center bg-card border border-border p-4 rounded-xl">
+          <div className="relative w-full sm:w-80">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input 
+              value={q} 
+              onChange={(e) => setQ(e.target.value)} 
+              placeholder="Search team members…" 
+              className="vx-input pl-10 pr-10 w-full" 
+            />
+            {q && (
+              <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+              </button>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            <select 
+              value={filterRole} 
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="vx-input appearance-none w-full sm:w-48"
+            >
+              <option value="All">All Roles</option>
+              {roles.map((r: any) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex h-64 items-center justify-center">
-          <p className="text-muted-foreground">Loading your care team...</p>
+          <p className="text-muted-foreground animate-pulse">Loading your care team...</p>
         </div>
-      ) : assignments?.length === 0 ? (
+      ) : uniqueAssignments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-muted/20 rounded-2xl border border-white/5">
           <div className="w-48 h-48 mb-6 relative opacity-80">
             {/* Placeholder for premium illustration */}
@@ -94,17 +149,18 @@ export default function MemberCareTeamPage() {
             Contact Support
           </a>
         </div>
+      ) : filteredTeam.length === 0 ? (
+        <div className="p-12 text-center border border-dashed border-border rounded-xl">
+           <p className="text-muted-foreground">No team members match your criteria.</p>
+           {(q || filterRole !== "All") && (
+             <button onClick={() => { setQ(""); setFilterRole("All"); }} className="mt-2 text-sm text-[var(--vx-ink)] hover:underline">
+               Clear filters
+             </button>
+           )}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assignments?.reduce((acc: any[], current: any) => {
-            const staffId = current.staff?.id;
-            if (staffId && !acc.find((item: any) => item.staff?.id === staffId)) {
-              acc.push(current);
-            } else if (!staffId) {
-              acc.push(current);
-            }
-            return acc;
-          }, []).map((assignment: any) => {
+          {filteredTeam.map((assignment: any) => {
             const staff = assignment.staff;
             if (!staff) {
               return (
