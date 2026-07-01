@@ -143,7 +143,7 @@ function BioAgeTrend() {
   return (
     <div className="vx-card p-6" data-testid="bio-age-card">
       <p className="text-xs uppercase tracking-widest text-muted-foreground">Latest biological age</p>
-      <p className="mt-2 font-display text-5xl">{latest.biological_age} yrs</p>
+      <p className="mt-2 font-display text-5xl">{latest.biological_age != null ? `${latest.biological_age} yrs` : "—"}</p>
       <p className="mt-1 text-sm text-muted-foreground">
         Calculated {new Date(latest.calculated_at).toLocaleDateString()}
       </p>

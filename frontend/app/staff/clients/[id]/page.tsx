@@ -126,9 +126,9 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
         <Card title="Biological Age Engine">
           {bioRecords && bioRecords.length > 0 ? (
             <div className="space-y-2">
-              <div className="flex justify-between items-center"><span className="text-sm">Bio Age</span><span className="font-display text-lg">{bioRecords[0].biological_age} yrs</span></div>
-              <div className="flex justify-between items-center"><span className="text-sm">Longevity</span><span className="font-display text-lg">{bioRecords[0].longevity_score}</span></div>
-              <div className="flex justify-between items-center"><span className="text-sm">Confidence</span><span className="font-display text-lg">{bioRecords[0].confidence_score}%</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm">Bio Age</span><span className="font-display text-lg">{bioRecords[0].biological_age != null ? `${bioRecords[0].biological_age} yrs` : "—"}</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm">Longevity</span><span className="font-display text-lg">{bioRecords[0].longevity_score != null ? bioRecords[0].longevity_score : "—"}</span></div>
+              <div className="flex justify-between items-center"><span className="text-sm">Confidence</span><span className="font-display text-lg">{bioRecords[0].confidence_score != null ? `${bioRecords[0].confidence_score}%` : "—"}</span></div>
               <p className="text-[10px] text-muted-foreground mt-2">Calculated {new Date(bioRecords[0].calculated_at).toLocaleDateString()}</p>
             </div>
           ) : (
