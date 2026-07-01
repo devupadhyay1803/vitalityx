@@ -38,6 +38,22 @@ export async function POST(req: NextRequest) {
  const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
  const userAgent = req.headers.get("user-agent") || "unknown";
 
+ // Ensure profile exists (in case the DB trigger failed or was removed)
+ await supabase.from("profiles").upsert({
+   id: user.id,
+   email: user.email,
+   full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "Member",
+   role: user.user_metadata?.role || "Member"
+ }, { onConflict: "id" });
+
+ // Ensure client_record exists
+ await supabase.from("client_records").upsert({
+    member_id: user.id,
+    consented: true,
+    consented_at: new Date().toISOString(),
+    consent_version: CONSENT_VERSION
+  }, { onConflict: "member_id" });
+
  const { error } = await supabase.from("consent_records").insert({
  user_id: user.id,
  consent_version: CONSENT_VERSION,
