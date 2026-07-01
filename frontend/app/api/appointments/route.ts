@@ -37,6 +37,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const { data: apt } = await supabase
+      .from("appointments")
+      .select("member_id, staff_id")
+      .eq("id", appointmentId)
+      .maybeSingle();
+
+    if (!apt) {
+      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+    }
+
+    const adminRoles = ["Admin", "Super Admin", "Operations"];
+    const isAdmin = profile?.role && adminRoles.includes(profile.role);
+    const isOwner = apt.member_id === user.id;
+    const isAssignedStaff = apt.staff_id === user.id;
+
+    if (!isAdmin && !isOwner && !isAssignedStaff) {
+      return NextResponse.json({ error: "Forbidden: You do not have permission to modify this appointment." }, { status: 403 });
+    }
+
     // This is the backend hook for email placeholders (Booking confirmation, Reminder, Reschedule, Cancellation)
     // Here we simulate triggering a transactional email provider like Resend or SendGrid.
     
