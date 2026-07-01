@@ -3,79 +3,79 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 export type CartItem = {
-  id: string;
-  name: string;
-  priceCents: number;
-  recurring: boolean;
-  quantity: number;
+ id: string;
+ name: string;
+ priceCents: number;
+ recurring: boolean;
+ quantity: number;
 };
 
 type CartCtx = {
-  items: CartItem[];
-  add: (item: Omit<CartItem, "quantity">, qty?: number) => void;
-  remove: (id: string) => void;
-  setQty: (id: string, qty: number) => void;
-  clear: () => void;
-  count: number;
-  subtotalCents: number;
+ items: CartItem[];
+ add: (item: Omit<CartItem, "quantity">, qty?: number) => void;
+ remove: (id: string) => void;
+ setQty: (id: string, qty: number) => void;
+ clear: () => void;
+ count: number;
+ subtotalCents: number;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  console.log("CartProvider render:", items);
-  const [hydrated, setHydrated] = useState(false);
+ const [items, setItems] = useState<CartItem[]>([]);
+ console.log("CartProvider render:", items);
+ const [hydrated, setHydrated] = useState(false);
 
  useEffect(() => {
-  console.log("CartProvider mounted");
+ console.log("CartProvider mounted");
 
-  const raw = localStorage.getItem("vx_cart");
-  console.log("Loaded from localStorage:", raw);
+ const raw = localStorage.getItem("vx_cart");
+ console.log("Loaded from localStorage:", raw);
 
-  if (raw) {
-    try {
-      setItems(JSON.parse(raw));
-    } catch (e) {
-      console.error(e);
-    }
-  }
+ if (raw) {
+ try {
+ setItems(JSON.parse(raw));
+ } catch (e) {
+ console.error(e);
+ }
+ }
 
-  return () => {
-    console.log("CartProvider unmounted");
-  };
+ return () => {
+ console.log("CartProvider unmounted");
+ };
 }, []);
 
-  useEffect(() => {
-  console.log("Saving to localStorage:", items);
-  localStorage.setItem("vx_cart", JSON.stringify(items));
+ useEffect(() => {
+ console.log("Saving to localStorage:", items);
+ localStorage.setItem("vx_cart", JSON.stringify(items));
 }, [items]);
 
-  const value: CartCtx = {
-    items,
-    add: (item, qty = 1) =>
-      setItems((prev) => {
-        const idx = prev.findIndex((i) => i.id === item.id);
-        if (idx >= 0) {
-          const copy = [...prev];
-          copy[idx] = { ...copy[idx], quantity: copy[idx].quantity + qty };
-          return copy;
-        }
-        return [...prev, { ...item, quantity: qty }];
-      }),
-    remove: (id) => setItems((prev) => prev.filter((i) => i.id !== id)),
-    setQty: (id, qty) =>
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: Math.max(1, qty) } : i))),
-    clear: () => setItems([]),
-    count: items.reduce((s, i) => s + i.quantity, 0),
-    subtotalCents: items.reduce((s, i) => s + i.priceCents * i.quantity, 0),
-  };
+ const value: CartCtx = {
+ items,
+ add: (item, qty = 1) =>
+ setItems((prev) => {
+ const idx = prev.findIndex((i) => i.id === item.id);
+ if (idx >= 0) {
+ const copy = [...prev];
+ copy[idx] = { ...copy[idx], quantity: copy[idx].quantity + qty };
+ return copy;
+ }
+ return [...prev, { ...item, quantity: qty }];
+ }),
+ remove: (id) => setItems((prev) => prev.filter((i) => i.id !== id)),
+ setQty: (id, qty) =>
+ setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: Math.max(1, qty) } : i))),
+ clear: () => setItems([]),
+ count: items.reduce((s, i) => s + i.quantity, 0),
+ subtotalCents: items.reduce((s, i) => s + i.priceCents * i.quantity, 0),
+ };
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+ return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useCart() {
-  const c = useContext(Ctx);
-  if (!c) throw new Error("useCart must be inside CartProvider");
-  return c;
+ const c = useContext(Ctx);
+ if (!c) throw new Error("useCart must be inside CartProvider");
+ return c;
 }

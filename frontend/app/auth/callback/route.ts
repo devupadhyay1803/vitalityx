@@ -12,25 +12,25 @@ import { createClient } from "@/lib/supabase/server";
  * user sees an "invalid key" error.
  */
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  // "next" param lets callers control the post-auth destination
-  const next = searchParams.get("next") ?? "/member/dashboard";
+ const { searchParams, origin } = new URL(request.url);
+ const code = searchParams.get("code");
+ // "next" param lets callers control the post-auth destination
+ const next = searchParams.get("next") ?? "/member/dashboard";
 
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      // For password reset, redirect to the reset-password page
-      // so the user can set their new password.
-      const type = searchParams.get("type");
-      if (type === "recovery") {
-        return NextResponse.redirect(`${origin}/reset-password`);
-      }
-      return NextResponse.redirect(`${origin}${next}`);
-    }
-  }
+ if (code) {
+ const supabase = await createClient();
+ const { error } = await supabase.auth.exchangeCodeForSession(code);
+ if (!error) {
+ // For password reset, redirect to the reset-password page
+ // so the user can set their new password.
+ const type = searchParams.get("type");
+ if (type === "recovery") {
+ return NextResponse.redirect(`${origin}/reset-password`);
+ }
+ return NextResponse.redirect(`${origin}${next}`);
+ }
+ }
 
-  // If code exchange failed, redirect to an error page or login
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
+ // If code exchange failed, redirect to an error page or login
+ return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
 }

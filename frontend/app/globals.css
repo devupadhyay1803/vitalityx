@@ -107,37 +107,63 @@ body {
 
 /* Pill button */
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
 }
-.btn-primary { background: var(--vx-ink); color: white; }
+.btn-primary { background: var(--vx-ink); color: white; border: 1px solid transparent; }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(0,0,0,0.3); }
-.btn-jade { background: var(--vx-jade); color: var(--vx-ink); }
+.btn-jade { background: var(--vx-jade); color: var(--vx-ink); border: 1px solid transparent; }
 .btn-jade:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -8px oklch(0.78 0.16 160 / 0.5); }
-.btn-ghost { background: transparent; color: var(--foreground); }
+.btn-secondary { background: var(--secondary); color: var(--secondary-foreground); border: 1px solid transparent; }
+.btn-secondary:hover { background: color-mix(in oklch, var(--secondary) 90%, black); }
+.btn-ghost { background: transparent; color: var(--foreground); border: 1px solid transparent; }
 .btn-ghost:hover { background: var(--muted); }
 .btn-outline { background: transparent; color: var(--foreground); border: 1px solid var(--border); }
-.btn-outline:hover { background: var(--muted); }
+.btn-outline:hover { background: var(--muted); border-color: var(--muted); }
+.btn-danger { background: var(--destructive); color: white; border: 1px solid transparent; }
+.btn-danger:hover { background: color-mix(in oklch, var(--destructive) 90%, black); }
 
 /* Card */
 .vx-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 1rem; /* Standardize to 2xl for all cards */
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  transition: all 0.2s ease-in-out;
+}
+.vx-card-hover:hover {
+  border-color: color-mix(in oklch, var(--vx-jade) 40%, transparent);
+  box-shadow: 0 8px 24px -4px rgb(0 0 0 / 0.05);
+  transform: translateY(-2px);
 }
 
 /* Input */
 .vx-input {
-  @apply w-full rounded-lg border bg-card px-4 py-2.5 text-sm outline-none transition;
+  @apply w-full rounded-xl border bg-card px-4 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-muted-foreground;
   border-color: var(--input);
 }
-.vx-input:focus { border-color: var(--vx-jade); box-shadow: 0 0 0 3px oklch(0.78 0.16 160 / 0.15); }
+.vx-input:focus, .vx-input:focus-visible { 
+  border-color: var(--vx-jade); 
+  box-shadow: 0 0 0 3px oklch(0.78 0.16 160 / 0.15); 
+  outline: none;
+}
+
+/* Label & Helper text */
+.vx-label { @apply block text-sm font-medium text-foreground mb-1.5; }
+.vx-helper { @apply block text-xs text-muted-foreground mt-1.5; }
+
+/* Table */
+.vx-table { @apply w-full text-left text-sm; }
+.vx-table th { @apply px-4 py-3 font-medium bg-muted/40 text-xs uppercase tracking-widest text-muted-foreground border-b border-border; }
+.vx-table td { @apply px-4 py-4 border-b border-border/50 align-middle; }
+.vx-table tr { @apply transition-colors hover:bg-muted/30; }
 
 /* Badge */
-.badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
+.badge { @apply inline-flex items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors; }
 .badge-jade { background: oklch(0.78 0.16 160 / 0.15); color: oklch(0.35 0.12 160); }
 .badge-amber { background: oklch(0.82 0.16 80 / 0.15); color: oklch(0.4 0.14 70); }
 .badge-coral { background: oklch(0.72 0.18 25 / 0.15); color: oklch(0.42 0.16 25); }
 .badge-ink { background: oklch(0.18 0.025 230 / 0.08); color: var(--vx-ink); }
+.badge-secondary { background: var(--secondary); color: var(--secondary-foreground); }
 
 /* Fade-in stagger */
 @keyframes vxFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
