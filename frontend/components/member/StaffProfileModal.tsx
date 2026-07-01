@@ -53,12 +53,12 @@ export function StaffProfileModal({
                 <p className="text-muted-foreground text-sm mt-1">{staff.staff_profiles.specialization}</p>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-4 sm:mt-0">
               {onMessage && staff.staff_profiles?.accepts_messages && (
-                <button onClick={onMessage} className="btn btn-outline">Message</button>
+                <button onClick={onMessage} className="btn btn-outline w-full sm:w-auto justify-center">Message</button>
               )}
               {onBook && staff.staff_profiles?.booking_enabled && (
-                <button onClick={onBook} className="btn btn-primary">Book Session</button>
+                <button onClick={onBook} className="btn btn-primary w-full sm:w-auto justify-center">Book Session</button>
               )}
             </div>
           </div>

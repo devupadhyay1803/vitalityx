@@ -21,6 +21,8 @@ export function PublicNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     const supabase = createClient();
     let mounted = true;
@@ -72,6 +74,7 @@ export function PublicNavbar() {
     const supabase = createClient();
     await supabase.auth.signOut();
     setMenuOpen(false);
+    setMobileMenuOpen(false);
     router.push("/");
     router.refresh();
   }
@@ -80,6 +83,7 @@ export function PublicNavbar() {
     state.profile?.role === "Member" ? "/member/dashboard" : "/staff/dashboard";
 
   return (
+    <>
     <header
       data-testid="public-navbar"
       className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md"
@@ -87,7 +91,7 @@ export function PublicNavbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" data-testid="navbar-logo" className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight">
           <span className="inline-block h-7 w-7 rounded-full bg-[var(--vx-jade)]" />
-          VitalityX
+          <span className="hidden sm:inline">VitalityX</span>
         </Link>
 
         <nav className="hidden gap-8 md:flex">
@@ -111,7 +115,7 @@ export function PublicNavbar() {
           {state.loading ? (
             <div className="h-9 w-20 animate-pulse rounded-full bg-muted" />
           ) : state.user ? (
-            <div ref={menuRef} className="relative">
+            <div ref={menuRef} className="relative hidden md:block">
               <button
                 data-testid="navbar-avatar-btn"
                 onClick={() => setMenuOpen((o) => !o)}
@@ -148,7 +152,7 @@ export function PublicNavbar() {
             </div>
           ) : (
             <>
-            <Link href="/login" data-testid="navbar-sign-in" className="btn btn-ghost whitespace-nowrap px-3 text-sm sm:px-5">
+            <Link href="/login" data-testid="navbar-sign-in" className="btn btn-ghost whitespace-nowrap px-3 text-sm sm:px-5 hidden md:inline-flex">
                 Sign In
               </Link>
               <Link href="/signup" data-testid="navbar-get-started" className="btn btn-primary hidden whitespace-nowrap sm:inline-flex">
@@ -156,8 +160,63 @@ export function PublicNavbar() {
               </Link>
             </>
           )}
+
+          <button 
+            className="md:hidden p-2 rounded-lg text-muted-foreground hover:bg-muted" 
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
         </div>
       </div>
     </header>
+
+    {/* Mobile Fullscreen Menu */}
+    {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-background flex flex-col animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <Link href="/" className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight" onClick={() => setMobileMenuOpen(false)}>
+              <span className="inline-block h-6 w-6 rounded-full bg-[var(--vx-jade)]" /> VitalityX
+            </Link>
+            <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2 text-muted-foreground hover:text-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6">
+            <nav className="flex flex-col gap-6">
+              <Link href="/programs" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Programs</Link>
+              <Link href="/genetics" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Genetics</Link>
+              <Link href="/labs" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Labs</Link>
+              <Link href="/supplements" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Store</Link>
+              <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Contact</Link>
+            </nav>
+
+            <div className="mt-8 pt-8 border-t border-border flex flex-col gap-4">
+              {state.user ? (
+                <>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--vx-ink)] text-sm font-semibold text-white">
+                      {getInitials(state.profile?.full_name || state.user.email)}
+                    </span>
+                    <div>
+                      <div className="font-medium">{state.profile?.full_name || "Member"}</div>
+                      <div className="text-sm text-muted-foreground">{state.user.email}</div>
+                    </div>
+                  </div>
+                  <Link href={dashHref} onClick={() => setMobileMenuOpen(false)} className="btn btn-primary w-full justify-center">Go to Dashboard</Link>
+                  <button onClick={handleSignOut} className="btn btn-outline w-full justify-center text-destructive border-destructive/20 hover:bg-destructive/10">Sign Out</button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="btn btn-outline w-full justify-center">Sign In</Link>
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary w-full justify-center">Get Started</Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+    )}
+    </>
   );
 }

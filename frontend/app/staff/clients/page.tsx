@@ -97,10 +97,11 @@ export default function ClientsPage() {
       </div>
       
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
-        <table className="w-full">
-          <thead className="bg-muted/40 text-left text-xs uppercase tracking-widest text-muted-foreground">
-            <tr>
-              <th className="p-4 font-medium">Name</th>
+        <div className="overflow-x-auto min-w-full">
+          <table className="w-full">
+            <thead className="bg-muted/40 text-left text-xs uppercase tracking-widest text-muted-foreground">
+              <tr>
+                <th className="p-4 font-medium">Name</th>
               <th className="p-4 font-medium">Email</th>
               <th className="p-4 font-medium">Goal</th>
               <th className="p-4 font-medium">Joined</th>
@@ -146,7 +147,8 @@ export default function ClientsPage() {
               </>
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   );

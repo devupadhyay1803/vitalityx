@@ -230,9 +230,9 @@ export default function MessagesPage() {
     : [];
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl gap-6 px-6 py-6" data-testid="member-messages-page">
+    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl md:gap-6 px-4 md:px-6 py-4 md:py-6" data-testid="member-messages-page">
       {/* Left panel: thread list */}
-      <div className="w-1/3 border-r border-border pr-6 flex flex-col">
+      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-1/3 md:border-r border-border md:pr-6 flex-col`}>
         <div className="flex items-center gap-2 mb-4">
           <MessageSquare className="text-[var(--vx-jade)]" size={24} />
           <h1 className="font-display text-2xl font-medium">Messages</h1>
@@ -300,7 +300,7 @@ export default function MessagesPage() {
       </div>
 
       {/* Right panel: current thread */}
-      <div className="flex-1 flex flex-col h-full">
+      <div className={`${selectedPartner ? "flex" : "hidden md:flex"} flex-1 flex-col h-full`}>
         {selectedPartner ? (
           <>
             <div className="border-b border-border pb-4 flex justify-between items-center">

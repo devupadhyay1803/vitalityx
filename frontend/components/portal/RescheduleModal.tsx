@@ -31,13 +31,13 @@ export function RescheduleModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-card shadow-2xl">
-        <div className="border-b border-white/5 p-6 pb-4">
+      <div className="w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-card shadow-2xl">
+        <div className="border-b border-white/5 p-6 pb-4 shrink-0">
           <h2 className="font-display text-2xl font-medium">Reschedule Session</h2>
           <p className="mt-1 text-sm text-muted-foreground">Select a new date and time</p>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto">
           <div className="mb-4 rounded-xl bg-[var(--vx-jade)]/10 p-3 text-sm text-[var(--vx-jade)]">
             <span className="font-medium block">Current Time:</span>
             {currentScheduledAt && format(new Date(currentScheduledAt), "MMMM d, yyyy h:mm a")}

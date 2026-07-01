@@ -60,13 +60,13 @@ export function BookingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-card shadow-2xl">
-        <div className="border-b border-white/5 p-6 pb-4">
+      <div className="w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-card shadow-2xl">
+        <div className="border-b border-white/5 p-6 pb-4 shrink-0">
           <h2 className="font-display text-2xl font-medium">Book a Session</h2>
           <p className="mt-1 text-sm text-muted-foreground">Step {step} of 3</p>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           {step === 1 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
               <div>

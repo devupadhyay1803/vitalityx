@@ -211,13 +211,13 @@ export default function StaffCareTeamManagement() {
 
       {assigningTo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-card shadow-2xl">
-            <div className="p-6 border-b border-border">
+          <div className="w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-card shadow-2xl">
+            <div className="p-6 border-b border-border shrink-0">
               <h2 className="font-display text-xl font-medium">Assign Clinician</h2>
               <p className="text-sm text-muted-foreground">Select a staff member and role.</p>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto">
               <div>
                 <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1.5 block">Search Staff</label>
                 <div className="relative">
@@ -243,7 +243,7 @@ export default function StaffCareTeamManagement() {
                 </select>
               </div>
 
-              <div className="max-h-60 overflow-y-auto border border-border rounded-xl divide-y divide-border mt-4">
+              <div className="border border-border rounded-xl divide-y divide-border mt-4">
                 {filteredStaff.map(s => (
                   <button 
                     key={s.id}
@@ -260,8 +260,8 @@ export default function StaffCareTeamManagement() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-border flex justify-end">
-              <button onClick={() => setAssigningTo(null)} className="btn btn-ghost">Cancel</button>
+            <div className="p-4 border-t border-border flex justify-end shrink-0">
+              <button onClick={() => setAssigningTo(null)} className="btn btn-ghost w-full sm:w-auto">Cancel</button>
             </div>
           </div>
         </div>

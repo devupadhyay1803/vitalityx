@@ -54,6 +54,7 @@ export function PortalShell({ variant, user, profile, children }: {
   const { theme, setTheme } = useTheme();
   const nav = variant === "member" ? MEMBER_NAV : STAFF_NAV;
   const idle = useIdleTimeout(variant === "staff" ? 30 * 60 * 1000 : 60 * 60 * 1000);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   void idle; // mounted via hook
 
   async function handleSignOut() {
@@ -123,20 +124,93 @@ export function PortalShell({ variant, user, profile, children }: {
         </div>
       </aside>
 
-      {/* Mobile bottom bar */}
-      <nav data-testid="portal-mobile-nav" className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-border bg-card md:hidden pb-safe">
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card px-4 py-3">
+        <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold">
+          <span className="inline-block h-5 w-5 rounded-full bg-[var(--vx-jade)]" /> VitalityX
+        </Link>
+        <div className="flex items-center gap-3">
+          <NotificationsPopover variant={variant} />
+          <button onClick={() => setMobileMenuOpen(true)} className="p-2 -mr-2 text-muted-foreground hover:text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Fullscreen Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-card flex flex-col animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div className="flex items-center gap-2 font-display text-lg font-semibold">
+              <span className="inline-block h-5 w-5 rounded-full bg-[var(--vx-jade)]" /> Menu
+            </div>
+            <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2 text-muted-foreground hover:text-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-2">
+            <div className="flex items-center gap-3 mb-6 p-3 rounded-xl bg-muted/50 border border-border">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--vx-ink)] text-sm font-semibold text-white">
+                {getInitials(profile.full_name || user.email)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{profile.full_name || "Member"}</p>
+                <p className="truncate text-xs text-muted-foreground">{profile.role}</p>
+              </div>
+            </div>
+
+            {nav.filter(item => {
+              if (item.href === "/staff/operations") return profile.role === "Admin" || profile.role === "Super Admin" || profile.role === "Operations";
+              return true;
+            }).map((item) => {
+              const active = path === item.href || path.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition ${
+                    active ? "bg-[var(--vx-ink)] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <Icon size={18} /> {item.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-border p-4 flex items-center justify-between pb-safe">
+            <button onClick={handleSignOut} className="flex items-center gap-2 text-sm text-destructive font-medium px-2 py-2">
+              <LogOut size={16} /> Sign out
+            </button>
+            <button 
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")} 
+              className="p-2 rounded-lg text-muted-foreground bg-muted hover:text-foreground transition flex items-center gap-2 text-sm"
+            >
+              <Moon size={16} className="hidden dark:block" />
+              <Sun size={16} className="block dark:hidden" />
+              Theme
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile bottom bar (optional now, but kept for quick access) */}
+      <nav data-testid="portal-mobile-nav" className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-border bg-card md:hidden pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         {nav.slice(0, 5).map((item) => {
           const active = path === item.href || path.startsWith(item.href + "/");
           const Icon = item.icon;
           return (
-            <Link key={item.href} href={item.href} className={`flex flex-1 flex-col items-center gap-1 py-2 text-[10px] ${active ? "text-[var(--vx-ink)]" : "text-muted-foreground"}`}>
-              <Icon size={18} /> {item.label}
+            <Link key={item.href} href={item.href} className={`flex flex-1 flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors ${active ? "text-[var(--vx-ink)]" : "text-muted-foreground"}`}>
+              <Icon size={20} className={active ? "scale-110 transition-transform" : ""} /> {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <main className="flex-1 pb-24 md:pb-0">{children}</main>
+      <main className="flex-1 pb-24 md:pb-0 overflow-x-hidden min-h-screen">{children}</main>
       </div>
     </UserProvider>
   );
