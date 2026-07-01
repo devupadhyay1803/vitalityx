@@ -32,11 +32,11 @@ export default function SessionsPage() {
   if (!data) return <p className="p-8 text-sm text-muted-foreground">Loading…</p>;
 
   const upcoming = data.appointments.filter((s: Record<string, any>) => 
-    new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed"
+    new Date(s.scheduled_start) >= new Date() && s.status !== "Cancelled" && s.status !== "Completed" && s.status !== "No Show"
   );
   
   const past = data.appointments.filter((s: Record<string, any>) => 
-    new Date(s.scheduled_start) < new Date() || s.status === "Cancelled" || s.status === "Completed"
+    new Date(s.scheduled_start) < new Date() || s.status === "Cancelled" || s.status === "Completed" || s.status === "No Show"
   ).sort((a: Record<string, any>, b: Record<string, any>) => new Date(b.scheduled_start).getTime() - new Date(a.scheduled_start).getTime());
 
  async function book(bookingData: Record<string, any>): Promise<void> {
@@ -196,8 +196,11 @@ function AppointmentCard({ appointment, onReschedule, onCancel, readOnly }: { ap
           <div className="flex items-center gap-3">
             <h3 className="font-display text-lg">{appointment.title}</h3>
             <span className={`badge ${
-              appointment.status === 'Cancelled' ? 'badge-coral' : 
-              appointment.status === 'Confirmed' ? 'badge-jade' : 
+              appointment.status === 'Cancelled'    ? 'badge-coral' : 
+              appointment.status === 'Confirmed'    ? 'badge-jade' : 
+              appointment.status === 'Completed'    ? 'badge-jade' :
+              appointment.status === 'Rescheduled'  ? 'badge-amber' :
+              appointment.status === 'No Show'      ? 'bg-muted text-muted-foreground' :
               'badge-ink'
             }`}>{appointment.status}</span>
           </div>
@@ -226,7 +229,7 @@ function AppointmentCard({ appointment, onReschedule, onCancel, readOnly }: { ap
         
         {!readOnly && (
           <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-            {appointment.meeting_link && !isPast && appointment.status !== 'Cancelled' && (
+            {appointment.meeting_link && !isPast && appointment.status !== 'Cancelled' && appointment.status !== 'Completed' && appointment.status !== 'No Show' && (
               <a href={appointment.meeting_link} target="_blank" rel="noreferrer" className="btn bg-[var(--vx-jade)] text-black hover:bg-[var(--vx-jade)]/90 px-4 py-2 text-sm flex items-center justify-center gap-2">
                 <Video size={16} /> Join
               </a>

@@ -151,7 +151,13 @@ export default async function OperationsDashboard() {
                 {allAppointments?.slice(0, 6).map(apt => (
                   <div key={apt.id} className="flex justify-between items-center p-3 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition">
                     <div className="flex items-center gap-4">
-                      <div className={`w-2 h-2 rounded-full ${apt.status === 'Confirmed' ? 'bg-[var(--vx-jade)]' : apt.status === 'Cancelled' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                      <div className={`w-2 h-2 rounded-full ${
+                        apt.status === 'Confirmed'   ? 'bg-[var(--vx-jade)]' :
+                        apt.status === 'Cancelled'   ? 'bg-red-500' :
+                        apt.status === 'Completed'   ? 'bg-purple-500' :
+                        apt.status === 'No Show'     ? 'bg-muted-foreground' :
+                        'bg-amber-500'
+                      }`} />
                       <div>
                         <p className="text-sm font-medium">
   {apt.member?.[0]?.full_name || "Unknown"}

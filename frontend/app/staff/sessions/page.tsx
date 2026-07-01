@@ -125,9 +125,12 @@ function StaffAppointmentCard({ appointment, onUpdateStatus, onUpdateField, onRe
           <div className="flex items-center gap-3 mb-1">
             <h3 className="font-display text-lg">{appointment.member?.full_name || "Unknown Member"}</h3>
             <span className={`badge ${
-              appointment.status === "Scheduled" ? "badge-ink" :
-              appointment.status === "Confirmed" ? "badge-jade" :
-              appointment.status === "Completed" ? "bg-white/10 text-white" : "badge-coral"
+              appointment.status === "Scheduled"   ? "badge-ink" :
+              appointment.status === "Confirmed"   ? "badge-jade" :
+              appointment.status === "Rescheduled" ? "badge-amber" :
+              appointment.status === "Completed"   ? "badge-jade" :
+              appointment.status === "No Show"     ? "bg-muted text-muted-foreground" :
+              "badge-coral"
             }`}>{appointment.status}</span>
           </div>
           <p className="text-sm text-muted-foreground font-medium">{appointment.title}</p>
@@ -144,7 +147,10 @@ function StaffAppointmentCard({ appointment, onUpdateStatus, onUpdateField, onRe
           {appointment.status === "Confirmed" && (
             <button onClick={() => onUpdateStatus(appointment.id, "Completed")} className="btn bg-[var(--vx-jade)] text-black hover:bg-[var(--vx-jade)]/90 px-3 py-1.5 text-xs">Mark Complete</button>
           )}
-          {appointment.status !== "Completed" && appointment.status !== "Cancelled" && (
+          {(appointment.status === "Confirmed" || appointment.status === "Scheduled" || appointment.status === "Rescheduled") && (
+            <button onClick={() => onUpdateStatus(appointment.id, "No Show")} className="btn btn-ghost text-muted-foreground px-3 py-1.5 text-xs">No Show</button>
+          )}
+          {appointment.status !== "Completed" && appointment.status !== "Cancelled" && appointment.status !== "No Show" && (
              <button onClick={onReschedule} className="btn btn-ghost px-3 py-1.5 text-xs">Reschedule</button>
           )}
         </div>

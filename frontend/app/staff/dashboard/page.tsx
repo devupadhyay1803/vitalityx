@@ -49,7 +49,14 @@ export default async function StaffDashboard() {
                 </div>
                 <div className="text-right">
                   <p>{formatDateTime(s.scheduled_start).split(", ")[1]}</p>
-                  <span className={`text-xs ${s.status === 'Confirmed' ? 'text-[var(--vx-jade)]' : 'text-muted-foreground'}`}>{s.status}</span>
+                  <span className={`text-xs ${
+                    s.status === 'Confirmed'   ? 'text-[var(--vx-jade)]' :
+                    s.status === 'Completed'   ? 'text-[var(--vx-jade)]' :
+                    s.status === 'Cancelled'   ? 'text-destructive' :
+                    s.status === 'Rescheduled' ? 'text-amber-500' :
+                    s.status === 'No Show'     ? 'text-muted-foreground' :
+                    'text-muted-foreground'
+                  }`}>{s.status}</span>
                 </div>
               </li>
             ))}</ul>}

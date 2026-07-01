@@ -41,10 +41,12 @@ export async function POST(req: NextRequest) {
     // Here we simulate triggering a transactional email provider like Resend or SendGrid.
     
     let subject = "";
-    if (action === "booked") subject = "Your VitalityX Session is Booked";
+    if (action === "booked")      subject = "Your VitalityX Session is Booked";
     if (action === "rescheduled") subject = "Your VitalityX Session has been Rescheduled";
-    if (action === "cancelled") subject = "Your VitalityX Session was Cancelled";
-    if (action === "confirmed") subject = "Your VitalityX Session is Confirmed";
+    if (action === "cancelled")   subject = "Your VitalityX Session was Cancelled";
+    if (action === "confirmed")   subject = "Your VitalityX Session is Confirmed";
+    if (action === "completed")   subject = "Your VitalityX Session is Complete";
+    if (action === "no show")     subject = "Your VitalityX Session was Marked No Show";
 
     console.log(`[Email Placeholder] Action: ${action} | Subject: ${subject} | Appointment ID: ${appointmentId}`);
 
@@ -63,22 +65,38 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    if (action === "rescheduled" || action === "cancelled") {
+    if (action === "rescheduled" || action === "cancelled" || action === "no show") {
       // Notify both parties
       const { data: apt } = await supabase.from("appointments").select("staff_id, member_id").eq("id", appointmentId).maybeSingle();
       if (apt) {
-        const type = action === "cancelled" ? "appointment_cancelled" : "appointment_rescheduled";
+        const type = action === "cancelled" ? "appointment_cancelled" : action === "no show" ? "appointment_no_show" : "appointment_rescheduled";
+        const titleText = action === "cancelled" ? "Cancelled" : action === "no show" ? "No Show" : "Rescheduled";
         await createNotification({
           userId: apt.staff_id,
-          title: `Appointment ${action === 'cancelled' ? 'Cancelled' : 'Rescheduled'}`,
-          message: `An appointment was ${action}.`,
+          title: `Appointment ${titleText}`,
+          message: `An appointment was marked as ${titleText.toLowerCase()}.`,
           type, category: "appointments", link: "/staff/sessions"
         });
         await createNotification({
           userId: apt.member_id,
-          title: `Appointment ${action === 'cancelled' ? 'Cancelled' : 'Rescheduled'}`,
-          message: `Your appointment was ${action}.`,
+          title: `Appointment ${titleText}`,
+          message: `Your appointment was marked as ${titleText.toLowerCase()}.`,
           type, category: "appointments", link: "/member/sessions"
+        });
+      }
+    }
+
+    if (action === "confirmed") {
+      // Notify member that staff confirmed their appointment
+      const { data: apt } = await supabase.from("appointments").select("member_id").eq("id", appointmentId).maybeSingle();
+      if (apt?.member_id) {
+        await createNotification({
+          userId: apt.member_id,
+          title: "Appointment Confirmed",
+          message: "Your appointment has been confirmed by your care team.",
+          type: "appointment_confirmed",
+          category: "appointments",
+          link: "/member/sessions"
         });
       }
     }
