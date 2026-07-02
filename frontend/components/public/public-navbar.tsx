@@ -6,115 +6,147 @@ import { createClient } from "@/lib/supabase/client";
 import { useCart } from "@/components/cart/cart-provider";
 import { getInitials } from "@/lib/utils";
 import { ShoppingBag, ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 type SessionState = {
- user: { id: string; email: string } | null;
- profile: { full_name: string | null; role: string } | null;
- loading: boolean;
+  user: { id: string; email: string } | null;
+  profile: { full_name: string | null; role: string } | null;
+  loading: boolean;
 };
 
 export function PublicNavbar() {
- const router = useRouter();
- const { count } = useCart();
- const [state, setState] = useState<SessionState>({ user: null, profile: null, loading: true });
- const [menuOpen, setMenuOpen] = useState(false);
- const menuRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const { count } = useCart();
+  const [state, setState] = useState<SessionState>({ user: null, profile: null, loading: true });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
- const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
- useEffect(() => {
- const supabase = createClient();
- let mounted = true;
+  useEffect(() => {
+    const supabase = createClient();
+    let mounted = true;
 
- async function loadSession() {
- try {
- const { data: { session } } = await supabase.auth.getSession();
- if (!session?.user) {
- if (mounted) setState({ user: null, profile: null, loading: false });
- return;
- }
- const { data: profile } = await supabase
- .from("profiles")
- .select("full_name, role")
- .eq("id", session.user.id)
- .single();
- if (mounted)
- setState({
- user: { id: session.user.id, email: session.user.email || "" },
- profile: profile || { full_name: null, role: "Member" },
- loading: false,
- });
- } catch (e) {
- console.warn("[navbar] session load failed", e);
- if (mounted) setState({ user: null, profile: null, loading: false });
- }
- }
- loadSession();
+    async function loadSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          if (mounted) setState({ user: null, profile: null, loading: false });
+          return;
+        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, role")
+          .eq("id", session.user.id)
+          .single();
+        if (mounted)
+          setState({
+            user: { id: session.user.id, email: session.user.email || "" },
+            profile: profile || { full_name: null, role: "Member" },
+            loading: false,
+          });
+      } catch (e) {
+        console.warn("[navbar] session load failed", e);
+        if (mounted) setState({ user: null, profile: null, loading: false });
+      }
+    }
+    loadSession();
 
- const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
- loadSession();
- });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadSession();
+    });
 
- return () => {
- mounted = false;
- subscription.unsubscribe();
- };
- }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
- useEffect(() => {
- function onClick(e: MouseEvent) {
- if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
- }
- document.addEventListener("mousedown", onClick);
- return () => document.removeEventListener("mousedown", onClick);
- }, []);
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
- async function handleSignOut() {
- const supabase = createClient();
- await supabase.auth.signOut();
- setMenuOpen(false);
- setMobileMenuOpen(false);
- router.push("/");
- router.refresh();
- }
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setMenuOpen(false);
+    setMobileMenuOpen(false);
+    router.push("/");
+    router.refresh();
+  }
 
- const dashHref =
- state.profile?.role === "Member" ? "/member/dashboard" : "/staff/dashboard";
+  const dashHref =
+    state.profile?.role === "Member" ? "/member/dashboard" : "/staff/dashboard";
 
- return (
- <>
- <header
- data-testid="public-navbar"
- className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md"
- >
- <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
- <Link href="/" data-testid="navbar-logo" className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight">
- <span className="inline-block h-7 w-7 rounded-full bg-[var(--vx-jade)]" />
- <span className="hidden sm:inline">VitalityX</span>
- </Link>
+  const navLinks = [
+    { href: "/programs", label: "Programs" },
+    { href: "/genetics", label: "Genetics" },
+    { href: "/labs", label: "Labs" },
+    { href: "/products", label: "Store" },
+    { href: "/contact", label: "Contact" },
+  ];
 
- <nav className="hidden gap-8 md:flex">
- <Link href="/programs" className="text-sm text-muted-foreground hover:text-foreground">Programs</Link>
- <Link href="/genetics" className="text-sm text-muted-foreground hover:text-foreground">Genetics</Link>
- <Link href="/labs" className="text-sm text-muted-foreground hover:text-foreground">Labs</Link>
- <Link href="/supplements" className="text-sm text-muted-foreground hover:text-foreground">Store</Link>
- <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">Contact</Link>
- </nav>
+  return (
+    <>
+      <header
+        data-testid="public-navbar"
+        className={`sticky top-0 z-40 transition-all duration-300 py-4 ${
+          scrolled 
+            ? "bg-background/80 border-b border-border/80 shadow-sm backdrop-blur-md" 
+            : "bg-background/40 border-b border-transparent"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
+          <Link href="/" data-testid="navbar-logo" className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight transition hover:opacity-90">
+            <span className="inline-block h-6 w-6 rounded-full bg-[var(--vx-jade)] shadow-md shadow-[var(--vx-jade)]/20" />
+            <span className="hidden sm:inline font-bold">VitalityX</span>
+          </Link>
 
- <div className="flex items-center gap-3">
- <Link href="/cart" data-testid="navbar-cart-link" className="relative rounded-full p-2 hover:bg-muted">
- <ShoppingBag size={18} />
- {count > 0 && (
- <span data-testid="cart-count-badge" className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--vx-jade)] px-1 text-[10px] font-semibold text-[var(--vx-ink)]">
- {count}
- </span>
- )}
- </Link>
+          <nav className="hidden gap-8 md:flex">
+            {navLinks.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium transition-all duration-200 relative py-1 hover:text-[var(--vx-jade)] ${
+                    active 
+                      ? "text-[var(--vx-jade)] font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-[var(--vx-jade)] after:rounded-full" 
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
- {state.loading ? (
- <div className="h-9 w-20 animate-pulse rounded-full bg-muted" />
- ) : state.user ? (
+          <div className="flex items-center gap-3">
+            <Link href="/cart" data-testid="navbar-cart-link" className="relative rounded-full p-2.5 hover:bg-muted transition-colors">
+              <ShoppingBag size={18} />
+              {count > 0 && (
+                <span data-testid="cart-count-badge" className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--vx-jade)] px-1 text-[10px] font-semibold text-[var(--vx-ink)] shadow-md">
+                  {count}
+                </span>
+              )}
+            </Link>
+
+            {state.loading ? (
+              <div className="h-9 w-20 animate-pulse rounded-full bg-muted" />
+            ) : state.user ? (
  <div ref={menuRef} className="relative hidden md:block">
  <button
  data-testid="navbar-avatar-btn"
@@ -188,7 +220,7 @@ export function PublicNavbar() {
  <Link href="/programs" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Programs</Link>
  <Link href="/genetics" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Genetics</Link>
  <Link href="/labs" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Labs</Link>
- <Link href="/supplements" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Store</Link>
+ <Link href="/products" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Store</Link>
  <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium hover:text-[var(--vx-jade)] transition-colors">Contact</Link>
  </nav>
 

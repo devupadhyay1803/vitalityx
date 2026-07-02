@@ -24,21 +24,24 @@ const MEMBER_NAV: Nav[] = [
  { href: "/member/supplements", label: "Supplements", icon: Package, testId: "sidebar-supplements" },
  { href: "/member/messages", label: "Messages", icon: MessageSquare,testId: "sidebar-messages" },
  { href: "/member/check-in", label: "Check-in", icon: Activity, testId: "sidebar-checkin" },
- { href: "/member/documents", label: "Documents", icon: FileText, testId: "sidebar-documents" },
+ { href: "/member/labs", label: "Labs", icon: FileText, testId: "sidebar-labs" },
  { href: "/member/activity", label: "Activity", icon: Clock, testId: "sidebar-activity" },
  { href: "/member/billing", label: "Billing", icon: Package, testId: "sidebar-billing" },
  { href: "/member/settings", label: "Settings", icon: Settings, testId: "sidebar-settings" },
 ];
 
 const STAFF_NAV: Nav[] = [
- { href: "/staff/dashboard", label: "Dashboard", icon: Activity, testId: "sidebar-staff-dashboard" },
- { href: "/staff/operations", label: "Operations",icon: LineChart, testId: "sidebar-staff-operations" },
- { href: "/staff/clients", label: "Clients", icon: Users, testId: "sidebar-staff-clients" },
- { href: "/staff/care-team", label: "Care Team",icon: Users, testId: "sidebar-staff-care-team" },
- { href: "/staff/sessions", label: "Sessions", icon: CalendarDays, testId: "sidebar-staff-sessions" },
- { href: "/staff/messages", label: "Messages", icon: MessageSquare,testId: "sidebar-staff-messages" },
- { href: "/staff/audit", label: "Audit Logs",icon: ShieldAlert, testId: "sidebar-staff-audit" },
- { href: "/staff/settings", label: "Settings", icon: Settings, testId: "sidebar-staff-settings" },
+  { href: "/staff/dashboard", label: "Dashboard", icon: Home, testId: "sidebar-staff-dashboard" },
+  { href: "/staff/clients", label: "Clients", icon: Users, testId: "sidebar-staff-clients" },
+  { href: "/staff/care-team", label: "Care Team", icon: Users, testId: "sidebar-staff-care-team" },
+  { href: "/staff/sessions", label: "Sessions", icon: CalendarDays, testId: "sidebar-staff-sessions" },
+  { href: "/staff/messages", label: "Messages", icon: MessageSquare, testId: "sidebar-staff-messages" },
+  { href: "/staff/users", label: "Users", icon: Users, testId: "sidebar-staff-users" },
+  { href: "/staff/revenue", label: "Revenue", icon: LineChart, testId: "sidebar-staff-revenue" },
+  { href: "/staff/audit", label: "Audit Logs", icon: ShieldAlert, testId: "sidebar-staff-audit" },
+  { href: "/staff/health", label: "Platform Health", icon: Activity, testId: "sidebar-staff-health" },
+  { href: "/staff/operations", label: "Operations", icon: LineChart, testId: "sidebar-staff-operations" },
+  { href: "/staff/settings", label: "Settings", icon: Settings, testId: "sidebar-staff-settings" },
 ];
 
 import { UserProvider } from "@/components/portal/user-provider";
@@ -73,12 +76,13 @@ export function PortalShell({ variant, user, profile, children }: {
  <span className="inline-block h-5 w-5 rounded-full bg-[var(--vx-jade)]" /> VitalityX
  </Link>
  <nav className="flex-1 px-3">
- {nav.filter(item => {
- if (item.href === "/staff/operations") {
- return profile.role === "Admin" || profile.role === "Super Admin" || profile.role === "Operations";
- }
- return true;
- }).map((item) => {
+  {nav.filter(item => {
+    const adminRoutes = ["/staff/users", "/staff/revenue", "/staff/audit", "/staff/health", "/staff/operations"];
+    if (adminRoutes.includes(item.href)) {
+      return profile.role === "Admin";
+    }
+    return true;
+  }).map((item) => {
  const active = path === item.href || path.startsWith(item.href + "/");
  const Icon = item.icon;
  return (
@@ -161,9 +165,12 @@ export function PortalShell({ variant, user, profile, children }: {
  </div>
 
  {nav.filter(item => {
- if (item.href === "/staff/operations") return profile.role === "Admin" || profile.role === "Super Admin" || profile.role === "Operations";
- return true;
- }).map((item) => {
+    const adminRoutes = ["/staff/users", "/staff/revenue", "/staff/audit", "/staff/health", "/staff/operations"];
+    if (adminRoutes.includes(item.href)) {
+      return profile.role === "Admin";
+    }
+    return true;
+  }).map((item) => {
  const active = path === item.href || path.startsWith(item.href + "/");
  const Icon = item.icon;
  return (

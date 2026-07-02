@@ -1,41 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PRODUCTS } from "@/lib/products";
+import { PROGRAMS } from "@/lib/programs";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CONSENT_VERSION } from "@/lib/consent";
 
 export async function POST(req: NextRequest) {
- try {
- const { items, origin } = (await req.json()) as { items: { id: string; quantity: number }[]; origin: string };
- if (!Array.isArray(items) || items.length === 0) return NextResponse.json({ error: "No items" }, { status: 400 });
+  try {
+    const { items, origin } = (await req.json()) as { items: { id: string; quantity: number }[]; origin: string };
+    if (!Array.isArray(items) || items.length === 0) return NextResponse.json({ error: "No items" }, { status: 400 });
 
- if (!process.env.STRIPE_SECRET_KEY) {
- return NextResponse.json({ error: "Checkout service unavailable" }, { status: 503 });
- }
- const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
- const supabase = await createClient();
- const { data: { user } } = await supabase.auth.getUser();
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json({ error: "Checkout service unavailable" }, { status: 503 });
+    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
- // Enforce consent for authenticated users
- if (user) {
- const { data: consentRecord } = await supabase
- .from("consent_records")
- .select("consent_version")
- .eq("user_id", user.id)
- .eq("consent_version", CONSENT_VERSION)
- .single();
- 
- if (!consentRecord) {
- return NextResponse.json({ error: "Forbidden: You must accept the latest Terms & Consent before proceeding." }, { status: 403 });
- }
- }
+    // Enforce consent for authenticated users
+    if (user) {
+      const { data: consentRecord } = await supabase
+        .from("consent_records")
+        .select("consent_version")
+        .eq("user_id", user.id)
+        .eq("consent_version", CONSENT_VERSION)
+        .single();
+      
+      if (!consentRecord) {
+        return NextResponse.json({ error: "Forbidden: You must accept the latest Terms & Consent before proceeding." }, { status: 403 });
+      }
+    }
 
- // Build line_items from SERVER-SIDE catalog only
- const line_items = items
- .map((it) => {
- const p = PRODUCTS[it.id];
- if (!p) return null;
+    // Build line_items from SERVER-SIDE catalog only
+    const line_items = items
+      .map((it) => {
+        // Find product or program
+        const p = PRODUCTS[it.id] || PROGRAMS[it.id];
+        if (!p) return null;
  return {
  price_data: {
  currency: "usd",

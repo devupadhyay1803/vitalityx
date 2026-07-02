@@ -84,13 +84,41 @@ function LoginForm() {
  <button data-testid="login-submit" type="submit" disabled={busy} className="btn btn-primary w-full">
  {busy ? "Signing in…" : "Sign In"}
  </button>
- <p className="pt-2 text-center text-sm text-muted-foreground">
- Don&apos;t have an account?{" "}
- <Link href="/signup" data-testid="login-signup-link" className="font-medium text-[var(--vx-ink)] underline underline-offset-2">
- Sign up →
- </Link>
- </p>
- </form>
+  <p className="pt-2 text-center text-sm text-muted-foreground">
+    Don&apos;t have an account?{" "}
+    <Link href="/signup" data-testid="login-signup-link" className="font-medium text-[var(--vx-ink)] underline underline-offset-2">
+      Sign up →
+    </Link>
+  </p>
+
+  {/* Demo credentials helper */}
+  <div className="mt-8 border-t border-border/50 pt-6">
+    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 text-center">Demo Quick Login</p>
+    <div className="grid grid-cols-3 gap-2">
+      <button 
+        type="button" 
+        onClick={() => { setEmail("admin@vitalityx.com"); setPassword("password"); }}
+        className="px-3 py-2.5 bg-red-500/10 text-red-600 hover:bg-red-500/20 text-xs font-semibold rounded-xl border border-red-500/20 transition-all text-center cursor-pointer"
+      >
+        Admin
+      </button>
+      <button 
+        type="button" 
+        onClick={() => { setEmail("demo.staff@vitalityx.ai"); setPassword("Demo@12345"); }}
+        className="px-3 py-2.5 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 text-xs font-semibold rounded-xl border border-blue-500/20 transition-all text-center cursor-pointer"
+      >
+        Coach
+      </button>
+      <button 
+        type="button" 
+        onClick={() => { setEmail("demo.member@vitalityx.ai"); setPassword("Demo@12345"); }}
+        className="px-3 py-2.5 bg-[var(--vx-jade)]/10 text-[var(--vx-jade)] hover:bg-[var(--vx-jade)]/20 text-xs font-semibold rounded-xl border border-[var(--vx-jade)]/20 transition-all text-center cursor-pointer"
+      >
+        Member
+      </button>
+    </div>
+  </div>
+  </form>
  );
 }
 

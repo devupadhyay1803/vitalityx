@@ -15,8 +15,7 @@ export default async function OperationsDashboard() {
 
  // Role enforcement
  const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
- const allowedRoles = ["Admin", "Super Admin", "Operations"];
- if (!profile || !allowedRoles.includes(profile.role)) {
+ if (!profile || profile.role !== "Admin") {
  return redirect("/staff/dashboard");
  }
 

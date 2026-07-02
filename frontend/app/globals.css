@@ -178,3 +178,14 @@ body {
   50% { transform: translateY(-6px); }
   100% { transform: translateY(0px); }
 }
+
+@keyframes highlight-fade {
+  0% { box-shadow: 0 0 0 4px var(--vx-jade); background-color: color-mix(in oklch, var(--vx-jade) 15%, transparent); }
+  10% { box-shadow: 0 0 0 6px var(--vx-jade); background-color: color-mix(in oklch, var(--vx-jade) 25%, transparent); }
+  100% { box-shadow: 0 0 0 0px transparent; background-color: transparent; }
+}
+
+.highlight-flash {
+  animation: highlight-fade 3s ease-out forwards;
+  border-radius: inherit;
+}

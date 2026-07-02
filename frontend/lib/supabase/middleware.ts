@@ -53,12 +53,12 @@ export async function updateSession(request: NextRequest) {
 
     if (isMember && role !== "Member") {
       const url = request.nextUrl.clone();
-      url.pathname = "/staff/dashboard";
+      url.pathname = "/unauthorized";
       return NextResponse.redirect(url);
     }
     if (isStaff && role === "Member") {
       const url = request.nextUrl.clone();
-      url.pathname = "/member/dashboard";
+      url.pathname = "/unauthorized";
       return NextResponse.redirect(url);
     }
 

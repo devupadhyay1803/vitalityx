@@ -60,19 +60,48 @@ export function NotificationHistory() {
  });
  };
 
- const handleNotificationClick = async (n: Notification) => {
- if (!n.is_read) {
- setNotifications(notifications.map(notif => notif.id === n.id ? { ...notif, is_read: true } : notif));
- await fetch("/api/notifications/read", {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({ action: "mark_one", notificationId: n.id }),
- });
- }
- if (n.link) {
- router.push(n.link);
- }
- };
+  const getFallbackLink = (type: string, userRole: string) => {
+    const v = userRole === "Member" ? "member" : "staff";
+    if (type.includes("appointment")) return `/${v}/sessions`;
+    if (type.includes("message")) return `/${v}/messages`;
+    if (type.includes("lab") || type.includes("document") || type.includes("consent")) return `/${v}/documents`;
+    if (type.includes("care_team") || type.includes("team")) return `/${v}/team`;
+    if (type.includes("payment") || type.includes("billing") || type.includes("renewed")) return `/${v}/billing`;
+    if (type.includes("protocol")) return `/${v}/protocol`;
+    if (type.includes("reminder") || type.includes("check-in")) return `/${v}/check-in`;
+    if (type.includes("supplement")) return `/${v}/supplements`;
+    return `/${v}/dashboard`;
+  };
+
+  const handleNotificationClick = (n: Notification) => {
+    if (!n.is_read) {
+      setNotifications(notifications.map(notif => notif.id === n.id ? { ...notif, is_read: true } : notif));
+      fetch("/api/notifications/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark_one", notificationId: n.id }),
+      }).catch(console.error);
+    }
+    
+    const entityId = (n as any).entity_id;
+    let target = n.link || getFallbackLink(n.type, user?.role || "Member");
+    
+    if (!target.startsWith('http') && !target.startsWith('/')) {
+      target = '/' + target;
+    }
+    
+    if (entityId) {
+      const separator = target.includes('?') ? '&' : '?';
+      target = `${target}${separator}highlight=${entityId}`;
+    }
+    
+    try {
+      router.push(target);
+    } catch (e) {
+      console.error("Router push failed, falling back to window.location", e);
+      window.location.href = target;
+    }
+  };
 
  const getIcon = (type: string) => {
  if (type.includes("appointment")) return <Calendar size={20} className="text-amber-500" />;

@@ -150,64 +150,67 @@ async function fetchActivity(userId: string): Promise<TimelineEvent[]> {
  return unique;
 }
 
+import { ModernEmptyState } from "@/components/dashboard/ModernEmptyState";
+import { TimelineItem } from "@/components/ui/TimelineItem";
+
 export default function ActivityPage() {
- const { user } = useUser();
- const { data: events, isLoading } = useSWR(["member-activity", user.id], () => fetchActivity(user.id), { revalidateOnFocus: false });
+  const { user } = useUser();
+  const { data: events, isLoading } = useSWR(["member-activity", user.id], () => fetchActivity(user.id), { revalidateOnFocus: false });
 
- return (
- <div className="mx-auto max-w-3xl px-6 py-10" data-testid="member-activity-page">
- <h1 className="font-display text-4xl font-medium">Activity History</h1>
- <p className="mt-2 text-muted-foreground">A complete record of your health journey.</p>
+  return (
+    <div className="mx-auto max-w-3xl px-6 py-10" data-testid="member-activity-page">
+      <div className="mb-10">
+        <h1 className="font-display text-4xl font-medium tracking-tight">Activity History</h1>
+        <p className="mt-2 text-muted-foreground text-lg">A complete record of your health journey.</p>
+      </div>
 
- <div className="mt-10">
- {isLoading && (
- <div className="space-y-4">
- {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />)}
- </div>
- )}
+      <div className="mt-10">
+        {isLoading && (
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted/50" />)}
+          </div>
+        )}
 
- {!isLoading && (!events || events.length === 0) && (
- <div className="rounded-xl border border-dashed border-border p-12 text-center">
- <Activity size={28} className="mx-auto mb-3 text-muted-foreground opacity-50" />
- <p className="text-sm text-muted-foreground">No activity recorded yet. Your journey starts here.</p>
- </div>
- )}
+        {!isLoading && (!events || events.length === 0) && (
+          <ModernEmptyState 
+            icon={<Activity size={32} />}
+            title="No Activity Yet"
+            description="Your activity history will appear here once you book a session, complete a protocol, or receive lab results."
+          />
+        )}
 
- {!isLoading && events && events.length > 0 && (
- <div className="relative border-l border-border pl-6 space-y-6">
- {events.map((event) => {
- const Icon = ICON_MAP[event.iconName] ?? Activity;
- return (
- <div key={event.id} className="relative" data-testid={`activity-event-${event.id}`}>
- <div className="absolute -left-[35px] flex h-[26px] w-[26px] items-center justify-center rounded-full vx-card">
- <Icon size={13} className={event.iconColor} />
- </div>
- <div className="vx-card p-4">
- <div className="flex items-start justify-between gap-4">
- <div className="min-w-0">
- <p className="font-medium text-sm">{event.title}</p>
- <p className="text-sm text-muted-foreground mt-0.5">{event.description}</p>
- </div>
- <div className="shrink-0 text-right">
- <time dateTime={event.date.toISOString()} className="text-xs text-muted-foreground whitespace-nowrap">
- {event.date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
- <br />
- {event.date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
- </time>
- </div>
- </div>
- {event.link && (
- <Link href={event.link} className="mt-2 inline-flex items-center gap-1 text-xs text-[var(--vx-jade)] hover:underline">
- View →
- </Link>
- )}
- </div>
- </div>
- );
- })}
- </div>
- )}
- </div>
- </div>
- );
+        {!isLoading && events && events.length > 0 && (
+          <div className="space-y-0 relative ml-2">
+            {events.map((event, index) => {
+              const Icon = ICON_MAP[event.iconName] ?? Activity;
+              const isLast = index === events.length - 1;
+              
+              const formattedDate = `${event.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} at ${event.date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+              
+              return (
+                <TimelineItem
+                  key={event.id}
+                  isLast={isLast}
+                  icon={<Icon size={18} className={event.iconColor} />}
+                  title={event.title}
+                  timestamp={formattedDate}
+                  description={
+                    <div className="mt-1">
+                      <p>{event.description}</p>
+                      {event.link && (
+                        <Link href={event.link} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[var(--vx-jade)] hover:underline">
+                          View details →
+                        </Link>
+                      )}
+                    </div>
+                  }
+                  className="hover:bg-transparent"
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

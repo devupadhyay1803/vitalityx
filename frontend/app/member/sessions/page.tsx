@@ -9,6 +9,7 @@ import { RescheduleModal } from "@/components/portal/RescheduleModal";
 import { Video, MapPin, Clock, FileText, Search, Filter, X } from "lucide-react";
 import { logClientAudit } from "@/lib/audit-client";
 import { format } from "date-fns";
+import { useHighlight } from "@/hooks/use-highlight";
 
 const supabase = createClient();
 
@@ -34,6 +35,8 @@ export default function SessionsPage() {
  if (error) throw error;
  return { userId: user.id, coachId: cr?.assigned_coach_id, appointments: appointments || [] };
  });
+
+ useHighlight(data?.appointments.map((a: any) => a.id) || []);
 
  const filteredAppointments = useMemo(() => {
  if (!data) return [];
@@ -285,69 +288,65 @@ export default function SessionsPage() {
  );
 }
 
+import { PremiumCard } from "@/components/ui/PremiumCard";
+import { StatusBadge, StatusType } from "@/components/ui/StatusBadge";
+
 function AppointmentCard({ appointment, onReschedule, onCancel, readOnly }: { appointment: Record<string, any>, onReschedule?: () => void, onCancel?: () => void, readOnly?: boolean }) {
- const isPast = new Date(appointment.scheduled_start) < new Date();
- 
- return (
- <div className="vx-card p-6">
- <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
- <div>
- <div className="flex items-center gap-3">
- <h3 className="font-display text-lg">{appointment.title}</h3>
- <span className={`badge ${
- appointment.status === 'Cancelled' ? 'badge-coral' : 
- appointment.status === 'Confirmed' ? 'badge-jade' : 
- appointment.status === 'Completed' ? 'badge-jade' :
- appointment.status === 'Rescheduled' ? 'badge-amber' :
- appointment.status === 'No Show' ? 'bg-muted text-muted-foreground' :
- 'badge-ink'
- }`}>{appointment.status}</span>
- </div>
- 
- <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm text-muted-foreground">
- <div className="flex items-center gap-2">
- <Clock size={16} />
- <span>{format(new Date(appointment.scheduled_start), "MMM d, yyyy")} • {format(new Date(appointment.scheduled_start), "h:mm a")}</span>
- </div>
- 
- {appointment.coach && (
- <div className="flex items-center gap-2">
- <FileText size={16} />
- <span>Coach: {appointment.coach.full_name}</span>
- </div>
- )}
- 
- {appointment.location && (
- <div className="flex items-center gap-2">
- <MapPin size={16} />
- <span>{appointment.location}</span>
- </div>
- )}
- </div>
- </div>
- 
- {!readOnly && (
- <div className="flex flex-col sm:flex-row gap-2 shrink-0">
- {appointment.meeting_link && !isPast && appointment.status !== 'Cancelled' && appointment.status !== 'Completed' && appointment.status !== 'No Show' && (
- <a href={appointment.meeting_link} target="_blank" rel="noreferrer" className="btn bg-[var(--vx-jade)] text-black hover:bg-[var(--vx-jade)]/90 px-4 text-sm flex items-center justify-center gap-2">
- <Video size={16} /> Join
- </a>
- )}
- 
- <div className="flex gap-2">
- <button onClick={onReschedule} className="btn btn-outline px-3 text-sm flex-1 sm:flex-none">Reschedule</button>
- <button onClick={onCancel} className="btn btn-danger px-3 text-sm flex-1 sm:flex-none">Cancel</button>
- </div>
- </div>
- )}
- 
- {readOnly && appointment.status !== 'Cancelled' && appointment.notes && (
- <div className="w-full mt-2 rounded-lg bg-white/5 p-3 text-sm">
- <span className="font-medium text-foreground block mb-1">Coach Notes:</span>
- {appointment.notes}
- </div>
- )}
- </div>
- </div>
- );
+  const isPast = new Date(appointment.scheduled_start) < new Date();
+  
+  return (
+    <PremiumCard id={appointment.id} interactive={!readOnly}>
+      <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h3 className="font-display text-lg">{appointment.title}</h3>
+            <StatusBadge status={appointment.status as StatusType} />
+          </div>
+          
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Clock size={16} />
+              <span>{format(new Date(appointment.scheduled_start), "MMM d, yyyy")} • {format(new Date(appointment.scheduled_start), "h:mm a")}</span>
+            </div>
+            
+            {appointment.coach && (
+              <div className="flex items-center gap-2">
+                <FileText size={16} />
+                <span>Coach: {appointment.coach.full_name}</span>
+              </div>
+            )}
+            
+            {appointment.location && (
+              <div className="flex items-center gap-2">
+                <MapPin size={16} />
+                <span>{appointment.location}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {!readOnly && (
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            {appointment.meeting_link && !isPast && appointment.status !== 'Cancelled' && appointment.status !== 'Completed' && appointment.status !== 'No Show' && (
+              <a href={appointment.meeting_link} target="_blank" rel="noreferrer" className="btn btn-primary px-4 text-sm flex items-center justify-center gap-2">
+                <Video size={16} /> Join
+              </a>
+            )}
+            
+            <div className="flex gap-2">
+              <button onClick={onReschedule} className="btn btn-outline px-3 text-sm flex-1 sm:flex-none">Reschedule</button>
+              <button onClick={onCancel} className="btn btn-danger px-3 text-sm flex-1 sm:flex-none">Cancel</button>
+            </div>
+          </div>
+        )}
+        
+        {readOnly && appointment.status !== 'Cancelled' && appointment.notes && (
+          <div className="w-full mt-2 rounded-lg bg-muted/50 p-3 text-sm">
+            <span className="font-medium text-foreground block mb-1">Coach Notes:</span>
+            {appointment.notes}
+          </div>
+        )}
+      </div>
+    </PremiumCard>
+  );
 }

@@ -3,7 +3,8 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, Legend } from "recharts";
+import { useHighlight } from "@/hooks/use-highlight";
 
 const supabase = createClient();
 
@@ -19,6 +20,8 @@ export default function CheckInPage() {
  if (error) throw error;
  return data || [];
  });
+
+ useHighlight();
 
  async function submit() {
  const { data: { user } } = await supabase.auth.getUser();
@@ -41,7 +44,7 @@ export default function CheckInPage() {
  <div className="mx-auto max-w-2xl px-6 py-10" data-testid="member-checkin-page">
  <h1 className="font-display text-4xl font-medium">Daily check-in</h1>
  <p className="mt-2 text-muted-foreground">30 seconds. We use this to tune your protocol.</p>
- <div className="mt-8 space-y-7 vx-card p-6">
+ <div id="checkin-form" className="mt-8 space-y-7 vx-card p-6 transition-all">
  <Slider label="Sleep" value={sleep} onChange={setSleep} testId="checkin-sleep" />
  <Slider label="Energy" value={energy} onChange={setEnergy} testId="checkin-energy" />
  <Slider label="Mood" value={mood} onChange={setMood} testId="checkin-mood" />
@@ -63,14 +66,26 @@ export default function CheckInPage() {
  <p className="text-sm text-muted-foreground">No check-ins yet this week.</p>
  </div>
  ) : (
- <div className="mt-3 h-40 vx-card p-3">
+ <div className="mt-3 h-64 vx-card p-3">
  <ResponsiveContainer width="100%" height="100%">
- <LineChart data={data}>
- <XAxis dataKey="checked_in_at" hide />
- <Tooltip />
- <Line type="monotone" dataKey="sleep_score" stroke="oklch(0.78 0.16 160)" strokeWidth={2} dot={false} />
- <Line type="monotone" dataKey="energy_score" stroke="oklch(0.82 0.16 80)" strokeWidth={2} dot={false} />
- <Line type="monotone" dataKey="mood_score" stroke="oklch(0.72 0.18 25)" strokeWidth={2} dot={false} />
+ <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+ <XAxis 
+ dataKey="checked_in_at" 
+ tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { weekday: 'short' })}
+ stroke="#888888" 
+ fontSize={12} 
+ tickLine={false} 
+ axisLine={false} 
+ />
+ <Tooltip 
+ contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+ labelFormatter={(val) => new Date(val).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+ formatter={(value, name) => [value, name === 'sleep_score' ? 'Sleep' : name === 'energy_score' ? 'Energy' : 'Mood']}
+ />
+ <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+ <Line name="Sleep" type="monotone" dataKey="sleep_score" stroke="oklch(0.78 0.16 160)" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} />
+ <Line name="Energy" type="monotone" dataKey="energy_score" stroke="oklch(0.82 0.16 80)" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} />
+ <Line name="Mood" type="monotone" dataKey="mood_score" stroke="oklch(0.72 0.18 25)" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} />
  </LineChart>
  </ResponsiveContainer>
  </div>
