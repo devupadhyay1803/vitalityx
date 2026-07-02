@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
  message: `You have successfully signed version ${CONSENT_VERSION} of our consent forms.`,
  type: "consent_required",
  category: "consent",
- link: "/member/documents"
+ link: "/member/labs"
  });
 
  return NextResponse.json({ success: true, message: "Consent recorded" });

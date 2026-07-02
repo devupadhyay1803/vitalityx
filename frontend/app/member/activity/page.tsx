@@ -94,7 +94,7 @@ async function fetchActivity(userId: string): Promise<TimelineEvent[]> {
 
  // Documents
  for (const doc of documents ?? []) {
- try { events.push({ id: `doc-${doc.id}`, title: "Document Uploaded", description: `"${doc.title}" (${doc.category}) was uploaded to your records.`, date: new Date(doc.created_at), iconName: "FileText", iconColor: "text-muted-foreground", link: "/member/documents" }); } catch { /* skip */ }
+ try { events.push({ id: `doc-${doc.id}`, title: "Document Uploaded", description: `"${doc.title}" (${doc.category}) was uploaded to your records.`, date: new Date(doc.created_at), iconName: "FileText", iconColor: "text-muted-foreground", link: "/member/labs" }); } catch { /* skip */ }
  }
 
  // Orders

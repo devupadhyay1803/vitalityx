@@ -102,7 +102,9 @@ export function NotificationsPopover({ variant }: { variant: "member" | "staff" 
   const getFallbackLink = (type: string, v: string) => {
     if (type.includes("appointment")) return `/${v}/sessions`;
     if (type.includes("message")) return `/${v}/messages`;
-    if (type.includes("lab") || type.includes("document") || type.includes("consent")) return `/${v}/documents`;
+    if (type.includes("lab") || type.includes("document") || type.includes("consent")) {
+      return v === "member" ? "/member/labs" : "/staff/clients";
+    }
     if (type.includes("care_team") || type.includes("team")) return `/${v}/care-team`;
     if (type.includes("payment") || type.includes("billing") || type.includes("renewed")) return `/${v}/billing`;
     if (type.includes("protocol")) return `/${v}/protocol`;
