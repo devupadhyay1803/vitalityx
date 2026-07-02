@@ -63,26 +63,26 @@ export async function updateSession(request: NextRequest) {
     }
 
     // MFA Enforcement for Staff
-    if (isStaff && role !== "Member" && !path.startsWith("/staff/mfa")) {
-      // Must call getSession to decode the JWT into the client state before checking AAL
-      await supabase.auth.getSession();
-      const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-
-if (assurance && "currentLevel" in assurance) {
-  if (assurance.currentLevel === "aal1") {
-    const url = request.nextUrl.clone();
-
-    if (assurance.nextLevel === "aal1") {
-      url.pathname = "/staff/mfa/setup";
-    } else if (assurance.nextLevel === "aal2") {
-      url.pathname = "/staff/mfa/verify";
-    }
-
-    url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
-  }
-}
-    }
+    // if (isStaff && role !== "Member" && !path.startsWith("/staff/mfa")) {
+    //   // Must call getSession to decode the JWT into the client state before checking AAL
+    //   await supabase.auth.getSession();
+    //   const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    // 
+    //   if (assurance && "currentLevel" in assurance) {
+    //     if (assurance.currentLevel === "aal1") {
+    //       const url = request.nextUrl.clone();
+    // 
+    //       if (assurance.nextLevel === "aal1") {
+    //         url.pathname = "/staff/mfa/setup";
+    //       } else if (assurance.nextLevel === "aal2") {
+    //         url.pathname = "/staff/mfa/verify";
+    //       }
+    // 
+    //       url.searchParams.set("next", path);
+    //       return NextResponse.redirect(url);
+    //     }
+    //   }
+    // }
   }
 
   // Redirect logged-in users away from /login + /signup
