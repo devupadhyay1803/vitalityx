@@ -9,7 +9,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
  const { data: { user } } = await supabase.auth.getUser();
  if (!user) redirect("/login?redirectTo=/staff/dashboard");
  const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle();
- const allowedRoles = ["Physician", "Health Coach", "Nutritionist", "Lab Coordinator", "Operations", "Admin", "Super Admin"];
+ const allowedRoles = ["Physician", "Health Coach", "Coach", "Nutritionist", "Lab Coordinator", "Operations", "Ops", "Admin", "Super Admin"];
  if (!profile || !allowedRoles.includes(profile.role)) redirect("/member/dashboard");
  return (
  <>
