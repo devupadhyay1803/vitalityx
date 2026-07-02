@@ -129,44 +129,64 @@ export default function LandingPage() {
  </div>
  </div>
 
- {/* Right: hero photo + dashboard preview */}
- <div className="relative">
- <div className="overflow-hidden rounded-3xl border border-border">
- <img
- src="/assets/hero_woman.jpg"
- alt="Healthy athletic young woman smiling confidently"
- className="h-[560px] w-full object-cover"
- />
- </div>
- {/* Floating Today's Overview card */}
- <div className="absolute -left-4 bottom-12 hidden w-72 vx-card/95 p-6 shadow-2xl backdrop-blur md:block vx-fade" style={{ animationDelay: "0.2s" }}>
- <div className="flex items-center justify-between">
- <p className="text-xs uppercase tracking-widest text-muted-foreground">Today&apos;s Overview</p>
- <span className="flex items-center gap-1 text-[10px] text-[var(--vx-jade)]">
- <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--vx-jade)]" /> Live
- </span>
- </div>
- <div className="mt-4 grid grid-cols-2 gap-4">
- <div>
- <p className="text-xs text-muted-foreground">Biological Age</p>
- <p className="font-display text-3xl">32</p>
- <p className="text-xs text-[var(--vx-jade)]">−5.2 yrs vs. Chronological</p>
- </div>
- <div>
- <p className="text-xs text-muted-foreground">Health Score</p>
- <p className="font-display text-3xl">89<span className="text-base text-muted-foreground">/100</span></p>
- <p className="text-xs text-[var(--vx-jade)]">Optimal</p>
- </div>
- </div>
- <div className="mt-4 border-t border-border pt-3">
- <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Next Check-In</p>
- <p className="mt-1 text-sm">Blood Biomarkers · May 28, 2026</p>
- </div>
- <Link href="/login" className="mt-4 block w-full rounded-lg bg-[var(--vx-ink)] py-2 text-center text-xs font-medium text-white hover:opacity-90">
- View Dashboard →
- </Link>
- </div>
- </div>
+        {/* Right: hero photo + dashboard preview */}
+        <div className="relative flex flex-col md:block gap-6">
+          <div className="relative overflow-hidden rounded-3xl border border-border">
+            {/* Subtle vignette for card contrast */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-transparent pointer-events-none" />
+            <img
+              src="/assets/hero_woman.jpg"
+              alt="Healthy athletic young woman smiling confidently"
+              className="h-[560px] w-full object-cover saturate-[1.05] contrast-[1.05]"
+            />
+          </div>
+          {/* Floating Today's Overview card */}
+          <div 
+            className="
+              md:absolute md:bottom-8 md:-left-8 
+              w-full md:w-[260px] 
+              p-6 
+              vx-fade
+              shadow-lg md:shadow-[0_20px_60px_rgba(0,0,0,0.15)] 
+              bg-white/80 md:bg-white/[0.15] 
+              backdrop-blur-none md:backdrop-blur-[16px] md:backdrop-saturate-[1.8] 
+              border border-border md:border-white/20 
+              rounded-[24px] 
+              z-10
+            " 
+            style={{ 
+              animationDelay: "0.2s", 
+              animation: "vxFade 0.6s ease-out 0.2s both, float 6s ease-in-out infinite" 
+            }}
+          >
+            <div className="absolute inset-0 rounded-[24px] bg-black/[0.02] -z-10 md:block hidden" /> {/* Subtle text contrast helper */}
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-widest text-[var(--vx-ink)] font-medium">Today&apos;s Overview</p>
+              <span className="flex items-center gap-1 text-[10px] text-[var(--vx-jade)] font-medium">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--vx-jade)]" /> Live
+              </span>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-[var(--vx-ink)]/70 font-medium">Biological Age</p>
+                <p className="font-display text-3xl font-semibold text-[var(--vx-ink)]">32</p>
+                <p className="text-[10px] font-medium text-[var(--vx-jade)]">−5.2 yrs vs. Chrono</p>
+              </div>
+              <div>
+                <p className="text-xs text-[var(--vx-ink)]/70 font-medium">Health Score</p>
+                <p className="font-display text-3xl font-semibold text-[var(--vx-ink)]">89<span className="text-base text-[var(--vx-ink)]/50">/100</span></p>
+                <p className="text-[10px] font-medium text-[var(--vx-jade)]">Optimal</p>
+              </div>
+            </div>
+            <div className="mt-4 border-t border-[var(--vx-ink)]/10 pt-3">
+              <p className="text-[10px] uppercase tracking-widest text-[var(--vx-ink)]/70 font-medium">Next Check-In</p>
+              <p className="mt-1 text-sm font-medium text-[var(--vx-ink)]">Blood Biomarkers · May 28, 2026</p>
+            </div>
+            <Link href="/login" className="mt-4 flex w-full items-center justify-center rounded-lg bg-[var(--vx-ink)] py-2.5 text-xs font-medium text-white transition hover:bg-black/90">
+              View Dashboard →
+            </Link>
+          </div>
+        </div>
  </div>
  </div>
  </section>
